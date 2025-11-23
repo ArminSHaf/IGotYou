@@ -15,7 +15,7 @@
 
 I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel search tools like Google Maps prioritize highly-reviewed locations, which means crowded tourist spots always appear first. This agent does the opposite by identifying places with fewer than 300 reviews but high quality ratings, then using AI to analyze why locals love these spots.
 
-The system combines Google Places API for structured data with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
+The system combines Google Places API and TripAdvisor API for structured data and reviews with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
 
 ---
 
@@ -52,8 +52,9 @@ The agent takes a natural language query like "quiet surf spot in Bali for begin
 Step 1: User provides query in natural language
 Step 2: Agent searches Google Places API
 Step 3: Agent filters results (under 300 reviews, 4.0+ rating)
-Step 4: Agent analyzes top reviews using Gemini AI
-Step 5: Agent returns formatted recommendations
+Step 4: Agent fetches additional reviews from TripAdvisor API for selected places
+Step 5: Agent analyzes reviews from both sources using Gemini AI
+Step 6: Agent returns formatted recommendations
 ```
 
 The entire process completes in under 30 seconds.
@@ -158,13 +159,15 @@ This system uses the simplest possible architecture that still demonstrates the 
 **Data Source**
 - Google Places API provides place information
 - Includes place details, reviews, ratings, and locations
+- TripAdvisor API provides additional reviews from places to enrich the review analysis
 
 **Processing Steps**
 1. Query understanding and intent extraction
-2. API search with relevant parameters
+2. API search with relevant parameters (Google Places API)
 3. Results filtering based on hidden gem criteria
-4. Review analysis using language model
-5. Output formatting and explanation generation
+4. Fetching additional reviews from TripAdvisor API for filtered places
+5. Review analysis using language model (combining reviews from both sources)
+6. Output formatting and explanation generation
 
 ### Technology Stack
 
@@ -172,6 +175,7 @@ This system uses the simplest possible architecture that still demonstrates the 
 |-----------|-----------|---------|
 | Language Model | Gemini 1.5 Flash | Query processing and review analysis |
 | Data API | Google Places API | Place information and reviews |
+| Data API | TripAdvisor API | Additional reviews from places to enrich analysis |
 | Development Environment | Kaggle Notebook | Required competition platform |
 | Programming Language | Python | Implementation language |
 
@@ -209,13 +213,13 @@ At least 80% of recommendations should have fewer than 300 reviews when manually
 **Purpose**: Extract meaningful insights from reviews that explain why a place is special
 
 **Implementation**:
-The agent takes the top 5 reviews for each place and sends them to Gemini with a structured prompt asking for:
+The agent collects reviews from both Google Places API and TripAdvisor API for each selected place, then takes the top 5-10 reviews across both sources and sends them to Gemini with a structured prompt asking for:
 - Why this spot is good (one sentence)
 - Best time to visit to avoid crowds (one sentence)
 - One insider tip from the reviews (one sentence)
 
 **Rationale**:
-Raw review data doesn't help users make decisions. By synthesizing reviews into actionable insights, the agent provides value beyond what users could get by reading reviews themselves.
+By combining reviews from multiple sources (Google Places and TripAdvisor), the agent gets a more comprehensive view of each location. Raw review data doesn't help users make decisions. By synthesizing reviews from multiple platforms into actionable insights, the agent provides value beyond what users could get by reading reviews from a single source themselves.
 
 **Success Criteria**:
 Generated insights should be factually accurate when compared to the actual reviews and should provide actionable information.
@@ -496,6 +500,7 @@ Before submitting to Kaggle, verify:
 
 **Technical Documentation**:
 - Google Places API Documentation
+- TripAdvisor API Documentation
 - Gemini API Reference
 - Python googlemaps Library Documentation
 
