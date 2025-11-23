@@ -9,6 +9,8 @@
 
 ---
 
+![thumbnail](images/Gemini_Generated_Image_hf3kd3hf3kd3hf3k.png)
+
 ## Executive Summary
 
 I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel search tools like Google Maps prioritize highly-reviewed locations, which means crowded tourist spots always appear first. This agent does the opposite by identifying places with fewer than 300 reviews but high quality ratings, then using AI to analyze why locals love these spots.
@@ -76,7 +78,7 @@ This system uses the simplest possible architecture that still demonstrates the 
 ### System Components
 
 **Agent Core**
-- Uses Gemini 1.5 Flash as the language model
+- Uses Gemini 2.5 Flash light as the language model
 - Processes user queries and generates responses
 - Coordinates all operations in sequence
 

@@ -1,0 +1,10 @@
+--- Security ---
+
+IGotYou_Agent/.env
+**/.env
+
+--- python  ---
+IGotYou-Agent/__pycache__/
+
+
+__pycache__/
