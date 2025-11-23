@@ -62,6 +62,79 @@ Unlike standard search which ranks by popularity, this agent ranks by "hiddennes
 
 ---
 
+## Output Format
+
+### What Users Receive
+
+When the agent completes its search and analysis, users receive comprehensive information about each recommended hidden gem location. The output includes:
+
+#### 1. Location Information
+- **Place Name**: The official name of the location
+- **Address**: Full address or area description
+- **Coordinates**: Geographic coordinates (latitude, longitude) for precise location
+- **Rating**: Star rating (e.g., 4.6 stars)
+- **Review Count**: Number of reviews (e.g., 142 reviews)
+
+#### 2. Visual Content
+- **Place Photos**: High-quality photos of the location retrieved from Google Places API
+  - Multiple photos showing different angles and perspectives
+  - Photos help users visualize the destination before visiting
+  - Images are displayed in a gallery format for easy browsing
+
+#### 3. Interactive Google Maps Integration
+- **Map Pin**: An interactive pin marker placed on Google Maps showing the exact location
+- **Clickable Navigation**: Users can click/tap the pin to:
+  - Open the location directly in Google Maps application
+  - Get turn-by-turn directions to the destination
+  - View the location in satellite or street view mode
+  - Access additional Google Maps features (save, share, etc.)
+
+#### 4. AI-Generated Analysis
+- **Why It's Special**: One-sentence explanation of what makes this spot unique
+- **Best Time to Visit**: Recommendation for when to visit to avoid crowds
+- **Insider Tip**: Specific advice extracted from local reviews
+
+### Output Display Format
+
+Each recommendation is presented as a card or section containing:
+```
+[Place Name]
+Rating: X.X stars | Reviews: XXX
+
+[Photo Gallery - Multiple Images]
+
+[Interactive Google Maps with Pin]
+[Click to open in Google Maps]
+
+Location: [Address]
+Coordinates: [Latitude, Longitude]
+
+Analysis:
+• Why it's special: [AI-generated insight]
+• Best time to visit: [Crowd avoidance tip]
+• Insider tip: [Local knowledge]
+```
+
+### User Interaction Flow
+
+1. User submits a query (e.g., "quiet surf spot in Bali")
+2. Agent processes and returns 2-3 recommendations
+3. For each recommendation, user sees:
+   - Location details and photos
+   - Interactive map with pin
+4. User clicks the map pin
+5. System redirects to Google Maps with the location pre-loaded
+6. User can then navigate, save, or share the location
+
+### Technical Implementation Notes
+
+- **Photos**: Retrieved from Google Places API `photos` field, displayed using optimized image URLs
+- **Map Integration**: Uses Google Maps Embed API or Google Maps JavaScript API to display interactive map
+- **Navigation Link**: Generates a Google Maps deep link (e.g., `https://www.google.com/maps/search/?api=1&query=lat,lng`) that opens the location in Google Maps
+- **Responsive Design**: Output format adapts to different screen sizes (desktop, tablet, mobile)
+
+---
+
 ## Technical Architecture
 
 ### Overall Design Philosophy
@@ -196,14 +269,22 @@ Hidden Gems Found:
 
 1. Batu Bolong Beach (North Section)
    Rating: 4.6 stars, 142 reviews
+   Address: Batu Bolong Beach, Canggu, Bali, Indonesia
+   
+   [Photo Gallery - Multiple images of the beach and surf conditions]
+   
+   [Interactive Google Maps with pin at location -8.6569, 115.1381]
+   [Click pin to open in Google Maps →]
    
    Analysis:
-   This spot offers mellow waves perfect for learning without 
-   the Kuta Beach crowds. Local surfers recommend visiting 
-   early morning between 6-8 AM when it's quietest. The north 
-   section specifically is less busy than the main beach area.
+   • Why it's special: This spot offers mellow waves perfect for 
+     learning without the Kuta Beach crowds.
+   • Best time to visit: Local surfers recommend visiting early 
+     morning between 6-8 AM when it's quietest.
+   • Insider tip: The north section specifically is less busy than 
+     the main beach area.
    
-   Location: -8.6569, 115.1381
+   Coordinates: -8.6569, 115.1381
 ```
 
 ---
@@ -224,14 +305,22 @@ Hidden Gems Found:
 
 1. Hjálparfoss
    Rating: 4.8 stars, 89 reviews
+   Address: Hjálparfoss, Iceland
+   
+   [Photo Gallery - Multiple images of the waterfall and surrounding area]
+   
+   [Interactive Google Maps with pin at location 64.2833, -19.8833]
+   [Click pin to open in Google Maps →]
    
    Analysis:
-   This waterfall is off the main tourist route, which keeps 
-   crowds minimal. Reviews consistently mention the lack of 
-   facilities, which means no tour bus stops. Visit anytime 
-   as it's consistently quiet, but bring your own snacks.
+   • Why it's special: This waterfall is off the main tourist route, 
+     which keeps crowds minimal.
+   • Best time to visit: Visit anytime as it's consistently quiet, 
+     but bring your own snacks.
+   • Insider tip: Reviews consistently mention the lack of facilities, 
+     which means no tour bus stops.
    
-   Location: 64.2833, -19.8833
+   Coordinates: 64.2833, -19.8833
 ```
 
 ---
