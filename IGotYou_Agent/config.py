@@ -3,7 +3,8 @@ import googlemaps
 from dotenv import load_dotenv
 
 # Load environment API keys
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API")
 
