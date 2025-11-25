@@ -4,14 +4,14 @@ from google.genai import types
 
 
 try:
-    from IGotYou_Agent.config import gmaps_client
+    from config import gmaps_client
 except ImportError:
     print("WARNING: Could not import 'gmaps_client' from config.")
     gmaps_client = None
 
 
 # 1. search Tool
-def search_places_tool(query: str) -> list:
+def search_places_tool(query: str) -> list[dict]:
     """
     Searches for outdoor places.
     Returns ONLY the specific fields needed for the 'Hidden Gem' filter to save tokens.
@@ -23,8 +23,7 @@ def search_places_tool(query: str) -> list:
 
     try:
         response = gmaps_client.places(
-            query=query,
-            type='natural_feature'
+            query=query
         )
         cands = []
         if response.get("status") == "OK" and "results" in response:
@@ -67,5 +66,5 @@ discovery_agent = Agent(
     Use the `search_places_tool` to find raw candidates for the user's request.
     Do not filter them. Just find them.
     """,
-    tools=[search_places_tool]
+    tools=[search_places_tool],
 )

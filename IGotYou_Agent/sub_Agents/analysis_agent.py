@@ -4,15 +4,15 @@ from google.genai import types
 import googlemaps
 
 try:
-    from IGotYou_Agent.config import gmaps_client
+    from config import gmaps_client
 except ImportError:
     print("WARNING: Could not import 'gmaps_client' from config.")
     gmaps_client = None
 
 
-def analysis_tool(cands: list) -> dict:
+def analysis_tool(cands: list[dict]) -> dict:
     """
-    Takes a raw list of candidates.
+    Takes a list of dictionaries of candidates.
     1. Filters them using Python (Reviews < 300, Rating > 4.0).
     2. Sorts by rating.
     3. Fetches details (reviews) for the top 3 'survivors'.
@@ -27,12 +27,13 @@ def analysis_tool(cands: list) -> dict:
         rev = p.get('reviews')
         rate = p.get('rating')
 
-        if 10 <= rev <= 400 and rate >= 3.5:
+        if 10 <= rev <= 1000 and rate >= 3.5:
             potential_hidden_gems.append(p)
 
     if not potential_hidden_gems:
         return {
-            "no potential hidden gems"
+            "status": "zero_gems",
+            "message": "No places met the HIdden gem logic."
         }
 
     # sort by rating
@@ -67,6 +68,7 @@ def analysis_tool(cands: list) -> dict:
             })
         except Exception as e:
             print(f"Error fetching ,{gem['name']} {e}")
+    return {"status": "success", "gems": result}
 
 
 # 2. Agent Configuration
@@ -86,23 +88,20 @@ analysis_agent = Agent(
         retry_options=retry_config
     ),
 
-    description="Filters candidates using Python logic and analyzes reviews.",
+    description="Filters candidates using Python logic and passes the structured data",
     instruction="""
     You are the **Analysis Agent**. 
     
-    INPUT: You will receive a raw JSON list of candidates.
+    You will receive a raw list of candidates.
     
     YOUR JOB:
-    1. Pass the ENTIRE list to `analyze_hidden_gems_tool`. 
-       (Do not filter it yourself. The tool does the math).
+    1. Pass the ENTIRE list to `analysis_tool`. 
     
     2. Receive the structured data back from the tool.
     
-    3. For each Gem returned by the tool, write a short analysis:
-       - **Why it's special**: Based on the `reviews_content`.
-       - **Insider Tip**: Extract one specific tip. Time Interval to visit if there is any.
-       
-    OUTPUT: Return the final structured JSON with your analysis added.
+    3. **MANDATORY STEP:** After the tool runs, you MUST repeat the JSON output as your final response.
+      
+
     """,
-    tools=[analysis_tool]
+    tools=[analysis_tool],
 )

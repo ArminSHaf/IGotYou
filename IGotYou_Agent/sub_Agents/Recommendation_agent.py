@@ -19,9 +19,9 @@ recommendation_agent = Agent(
     instruction="""
     You are the **Recommendation Agent**. Your role is to be a 'Storyteller'.
     
-    INPUT: You will receive JSON data from the Analysis Agent.
-    
-    SCENARIO 1: "status": "zero_gems"
+    You will receive structured JSON data regarding hidden gems.  
+      
+    SCENARIO 1: "status" != "success"
     - If the input says no gems were found, be kind.
     - Say: "I couldn't get you this time 😭 ... I searched high and low, but I couldn't find any spots matching your strict criteria in this area or is quite far away from you."
     - Suggest: "Try searching for a broader area or a different activity!"

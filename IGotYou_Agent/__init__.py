@@ -1,3 +1,3 @@
-from IGotYou_Agent.agent import *
+from .agent import *
 
 __all__ = ["root_agent"]
