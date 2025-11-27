@@ -15,7 +15,7 @@
 
 I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel search tools like Google Maps prioritize highly-reviewed locations, which means crowded tourist spots always appear first. This agent does the opposite by identifying places with fewer than 300 reviews but high quality ratings, then using AI to analyze why locals love these spots.
 
-The system combines Google Places API for structured data with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
+The system combines Google Places API and TripAdvisor API for structured data and reviews with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
 
 ---
 
@@ -52,8 +52,9 @@ The agent takes a natural language query like "quiet surf spot in Bali for begin
 Step 1: User provides query in natural language
 Step 2: Agent searches Google Places API
 Step 3: Agent filters results (under 300 reviews, 4.0+ rating)
-Step 4: Agent analyzes top reviews using Gemini AI
-Step 5: Agent returns formatted recommendations
+Step 4: Agent fetches additional reviews from TripAdvisor API for selected places
+Step 5: Agent analyzes reviews from both sources using Gemini AI
+Step 6: Agent returns formatted recommendations
 ```
 
 The entire process completes in under 30 seconds.
@@ -61,6 +62,79 @@ The entire process completes in under 30 seconds.
 ### Key Differentiator
 
 Unlike standard search which ranks by popularity, this agent ranks by "hiddenness" while maintaining quality standards. It's specifically designed to surface places that other tools bury.
+
+---
+
+## Output Format
+
+### What Users Receive
+
+When the agent completes its search and analysis, users receive comprehensive information about each recommended hidden gem location. The output includes:
+
+#### 1. Location Information
+- **Place Name**: The official name of the location
+- **Address**: Full address or area description
+- **Coordinates**: Geographic coordinates (latitude, longitude) for precise location
+- **Rating**: Star rating (e.g., 4.6 stars)
+- **Review Count**: Number of reviews (e.g., 142 reviews)
+
+#### 2. Visual Content
+- **Place Photos**: High-quality photos of the location retrieved from Google Places API
+  - Multiple photos showing different angles and perspectives
+  - Photos help users visualize the destination before visiting
+  - Images are displayed in a gallery format for easy browsing
+
+#### 3. Interactive Google Maps Integration
+- **Map Pin**: An interactive pin marker placed on Google Maps showing the exact location
+- **Clickable Navigation**: Users can click/tap the pin to:
+  - Open the location directly in Google Maps application
+  - Get turn-by-turn directions to the destination
+  - View the location in satellite or street view mode
+  - Access additional Google Maps features (save, share, etc.)
+
+#### 4. AI-Generated Analysis
+- **Why It's Special**: One-sentence explanation of what makes this spot unique
+- **Best Time to Visit**: Recommendation for when to visit to avoid crowds
+- **Insider Tip**: Specific advice extracted from local reviews
+
+### Output Display Format
+
+Each recommendation is presented as a card or section containing:
+```
+[Place Name]
+Rating: X.X stars | Reviews: XXX
+
+[Photo Gallery - Multiple Images]
+
+[Interactive Google Maps with Pin]
+[Click to open in Google Maps]
+
+Location: [Address]
+Coordinates: [Latitude, Longitude]
+
+Analysis:
+• Why it's special: [AI-generated insight]
+• Best time to visit: [Crowd avoidance tip]
+• Insider tip: [Local knowledge]
+```
+
+### User Interaction Flow
+
+1. User submits a query (e.g., "quiet surf spot in Bali")
+2. Agent processes and returns 2-3 recommendations
+3. For each recommendation, user sees:
+   - Location details and photos
+   - Interactive map with pin
+4. User clicks the map pin
+5. System redirects to Google Maps with the location pre-loaded
+6. User can then navigate, save, or share the location
+
+### Technical Implementation Notes
+
+- **Photos**: Retrieved from Google Places API `photos` field, displayed using optimized image URLs
+- **Map Integration**: Uses Google Maps Embed API or Google Maps JavaScript API to display interactive map
+- **Navigation Link**: Generates a Google Maps deep link (e.g., `https://www.google.com/maps/search/?api=1&query=lat,lng`) that opens the location in Google Maps
+- **Responsive Design**: Output format adapts to different screen sizes (desktop, tablet, mobile)
 
 ---
 
@@ -85,13 +159,15 @@ This system uses the simplest possible architecture that still demonstrates the 
 **Data Source**
 - Google Places API provides place information
 - Includes place details, reviews, ratings, and locations
+- TripAdvisor API provides additional reviews from places to enrich the review analysis
 
 **Processing Steps**
 1. Query understanding and intent extraction
-2. API search with relevant parameters
+2. API search with relevant parameters (Google Places API)
 3. Results filtering based on hidden gem criteria
-4. Review analysis using language model
-5. Output formatting and explanation generation
+4. Fetching additional reviews from TripAdvisor API for filtered places
+5. Review analysis using language model (combining reviews from both sources)
+6. Output formatting and explanation generation
 
 ### Technology Stack
 
@@ -99,6 +175,7 @@ This system uses the simplest possible architecture that still demonstrates the 
 |-----------|-----------|---------|
 | Language Model | Gemini 1.5 Flash | Query processing and review analysis |
 | Data API | Google Places API | Place information and reviews |
+| Data API | TripAdvisor API | Additional reviews from places to enrich analysis |
 | Development Environment | Kaggle Notebook | Required competition platform |
 | Programming Language | Python | Implementation language |
 
@@ -136,13 +213,13 @@ At least 80% of recommendations should have fewer than 300 reviews when manually
 **Purpose**: Extract meaningful insights from reviews that explain why a place is special
 
 **Implementation**:
-The agent takes the top 5 reviews for each place and sends them to Gemini with a structured prompt asking for:
+The agent collects reviews from both Google Places API and TripAdvisor API for each selected place, then takes the top 5-10 reviews across both sources and sends them to Gemini with a structured prompt asking for:
 - Why this spot is good (one sentence)
 - Best time to visit to avoid crowds (one sentence)
 - One insider tip from the reviews (one sentence)
 
 **Rationale**:
-Raw review data doesn't help users make decisions. By synthesizing reviews into actionable insights, the agent provides value beyond what users could get by reading reviews themselves.
+By combining reviews from multiple sources (Google Places and TripAdvisor), the agent gets a more comprehensive view of each location. Raw review data doesn't help users make decisions. By synthesizing reviews from multiple platforms into actionable insights, the agent provides value beyond what users could get by reading reviews from a single source themselves.
 
 **Success Criteria**:
 Generated insights should be factually accurate when compared to the actual reviews and should provide actionable information.
@@ -198,14 +275,22 @@ Hidden Gems Found:
 
 1. Batu Bolong Beach (North Section)
    Rating: 4.6 stars, 142 reviews
+   Address: Batu Bolong Beach, Canggu, Bali, Indonesia
+   
+   [Photo Gallery - Multiple images of the beach and surf conditions]
+   
+   [Interactive Google Maps with pin at location -8.6569, 115.1381]
+   [Click pin to open in Google Maps →]
    
    Analysis:
-   This spot offers mellow waves perfect for learning without 
-   the Kuta Beach crowds. Local surfers recommend visiting 
-   early morning between 6-8 AM when it's quietest. The north 
-   section specifically is less busy than the main beach area.
+   • Why it's special: This spot offers mellow waves perfect for 
+     learning without the Kuta Beach crowds.
+   • Best time to visit: Local surfers recommend visiting early 
+     morning between 6-8 AM when it's quietest.
+   • Insider tip: The north section specifically is less busy than 
+     the main beach area.
    
-   Location: -8.6569, 115.1381
+   Coordinates: -8.6569, 115.1381
 ```
 
 ---
@@ -226,14 +311,22 @@ Hidden Gems Found:
 
 1. Hjálparfoss
    Rating: 4.8 stars, 89 reviews
+   Address: Hjálparfoss, Iceland
+   
+   [Photo Gallery - Multiple images of the waterfall and surrounding area]
+   
+   [Interactive Google Maps with pin at location 64.2833, -19.8833]
+   [Click pin to open in Google Maps →]
    
    Analysis:
-   This waterfall is off the main tourist route, which keeps 
-   crowds minimal. Reviews consistently mention the lack of 
-   facilities, which means no tour bus stops. Visit anytime 
-   as it's consistently quiet, but bring your own snacks.
+   • Why it's special: This waterfall is off the main tourist route, 
+     which keeps crowds minimal.
+   • Best time to visit: Visit anytime as it's consistently quiet, 
+     but bring your own snacks.
+   • Insider tip: Reviews consistently mention the lack of facilities, 
+     which means no tour bus stops.
    
-   Location: 64.2833, -19.8833
+   Coordinates: 64.2833, -19.8833
 ```
 
 ---
@@ -407,6 +500,7 @@ Before submitting to Kaggle, verify:
 
 **Technical Documentation**:
 - Google Places API Documentation
+- TripAdvisor API Documentation
 - Gemini API Reference
 - Python googlemaps Library Documentation
 

@@ -1,0 +1,10 @@
+# Core dependencies for IGotYou Agent
+# Google ADK for building AI agents
+google-adk
+
+# Python dotenv for environment variable management
+python-dotenv
+
+# Google GenAI SDK (may be included with google-adk, but explicit for clarity)
+google-genai
+
