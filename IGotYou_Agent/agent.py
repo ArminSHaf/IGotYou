@@ -30,9 +30,32 @@ root_agent = Agent(
     ),
     description="Your role is to helps travelers discover quiet, lesser-known outdoor destinations",
     instruction="""
-        Your role is to find hidden outdoor gems with fewer than 300 reviews and at least a 4.0 rating. 
-        Analyze top reviews to explain why the place is special, the best time to visit, and one insider tip. 
-        Always return 2–3 recommendations in a clear, structured format with name, rating, review count, analysis, and coordinates.
+        Your role is to find hidden outdoor gems with fewer than 300 reviews and at least a 4.0 rating.
+        Analyze top reviews to explain why the place is special, the best time to visit, and one insider tip.
+        Always return 2–3 recommendations in a clear, structured JSON format.
+
+        IMPORTANT: Your response MUST be a valid JSON object with this exact structure:
+        {
+            "gems": [
+                {
+                    "placeName": "Name of the place",
+                    "address": "Full address",
+                    "coordinates": {"lat": 0.0, "lng": 0.0},
+                    "rating": 4.5,
+                    "reviewCount": 150,
+                    "photos": ["photo_url_1", "photo_url_2"],
+                    "analysis": {
+                        "whySpecial": "Why this place is special based on reviews",
+                        "bestTime": "Best time to visit",
+                        "insiderTip": "One insider tip"
+                    }
+                }
+            ]
+        }
+
+        Use Google Search to find real places with actual coordinates, ratings, and review counts.
+        For photos, use publicly available image URLs from search results or use placeholder images.
+        Always return valid JSON that can be parsed directly.
     """,
     tools=[google_search],
 )

@@ -32,31 +32,24 @@ cd IGotYou
 
 ## Step 2: Set Up Environment Variables
 
-### Frontend Environment Variables
+The project uses a **single `.env` file** at the root level for both frontend and backend. The frontend has a symlink to this file.
 
-1. Navigate to frontend directory:
-```bash
-cd frontend
-```
-
-2. Create `.env.local` from template:
-```bash
-cp .env.local.example .env.local
-```
-
-3. Edit `.env.local` and add your keys:
+1. Edit the `.env` file in the root directory:
 ```env
+# Google API Key for Gemini and Google ADK
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Google Maps API Key (for frontend - Next.js public variable)
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+
+# API URL (backend endpoint for frontend)
 NEXT_PUBLIC_API_URL=http://localhost:8000
-```
 
-### Backend Environment Variables
-
-The backend uses the existing `.env` file in the root directory. Make sure it contains:
-```env
-GOOGLE_API_KEY=your_gemini_api_key_here
+# Optional: CORS origins for production
 CORS_ORIGINS=http://localhost:3000
 ```
+
+**Note**: The `frontend/.env` is a symlink to the root `.env` file, so both frontend and backend read from the same source.
 
 ## Step 3: Install Dependencies
 
@@ -184,13 +177,17 @@ Open http://localhost:3000 in your browser.
 
 ### For Development
 
-1. **Connect Real Agent**: Update `backend/main.py` to parse actual agent responses instead of returning mock data
+1. ✅ **Agent Integration Complete**: The backend now uses the real IGotYou agent and parses responses
 
-2. **Implement Response Parser**: Create a function to parse the agent's text output into structured JSON
+2. ✅ **Google Maps Fixed**: Updated to use the new `@googlemaps/js-api-loader` functional API
 
-3. **Add Error Handling**: Improve error messages and retry logic
+3. ✅ **Mock Data Removed**: Frontend calls the real backend API
 
-4. **Add Loading States**: Show progress indicators during long searches
+4. **Future Enhancements**:
+   - Add caching for repeated queries
+   - Implement rate limiting
+   - Add more detailed error messages
+   - Add user feedback mechanism
 
 ### For Production
 

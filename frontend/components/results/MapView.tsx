@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { MapPin, ExternalLink } from 'lucide-react';
 import type { Coordinates } from '@/types';
 
@@ -18,16 +18,18 @@ export function MapView({ coordinates, placeName }: MapViewProps) {
 
   useEffect(() => {
     const initMap = async () => {
-      const loader = new Loader({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        version: 'weekly',
-      });
-
       try {
-        // @ts-ignore - Loader types may not match runtime API
-        await loader.load();
-
         if (!mapRef.current) return;
+
+        // Set API key using the new functional API
+        setOptions({
+          apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+          version: 'weekly',
+        });
+
+        // Use the new functional API to import libraries
+        const { Map } = await importLibrary('maps') as google.maps.MapsLibrary;
+        const { Marker } = await importLibrary('marker') as google.maps.MarkerLibrary;
 
         // Custom map styles (tropical green theme)
         const mapStyles: google.maps.MapTypeStyle[] = [
@@ -58,7 +60,7 @@ export function MapView({ coordinates, placeName }: MapViewProps) {
           },
         ];
 
-        const map = new google.maps.Map(mapRef.current, {
+        const map = new Map(mapRef.current, {
           center: coordinates,
           zoom: 14,
           styles: mapStyles,
@@ -67,21 +69,14 @@ export function MapView({ coordinates, placeName }: MapViewProps) {
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
+          mapId: 'IGOTYOU_MAP',
         });
 
         // Add custom marker
-        new google.maps.Marker({
+        new Marker({
           position: coordinates,
           map: map,
           title: placeName,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 12,
-            fillColor: '#6DDCA4',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 3,
-          },
         });
 
         mapInstanceRef.current = map;

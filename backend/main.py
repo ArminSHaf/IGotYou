@@ -72,38 +72,62 @@ class DiscoveryResponse(BaseModel):
     query: str
 
 
-def parse_agent_response(raw_response: str, query: str) -> DiscoveryResponse:
+def parse_agent_response(raw_response: str, query: str) -> dict:
     """
-    Parse the agent's text response into structured JSON.
+    Parse the agent's JSON response into structured data.
 
-    This is a simplified parser. In production, you'd want more robust parsing
-    or have the agent return structured JSON directly.
+    The agent is instructed to return JSON, so we parse it directly.
+    Falls back to mock data if parsing fails.
     """
-    # For now, return mock data
-    # TODO: Implement proper parsing of agent response
-    mock_gems = [
-        HiddenGem(
-            placeName="Hidden Beach Example",
-            address="Example Location, Bali, Indonesia",
-            coordinates=Coordinates(lat=-8.6569, lng=115.1381),
-            rating=4.6,
-            reviewCount=142,
-            photos=[
-                "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
-            ],
-            analysis=Analysis(
-                whySpecial="This spot offers amazing waves and fewer crowds.",
-                bestTime="Visit early morning for the best experience.",
-                insiderTip="Locals recommend bringing your own snacks."
-            )
-        )
-    ]
+    import json
 
-    return DiscoveryResponse(
-        gems=mock_gems,
-        processingTime=15.0,
-        query=query
-    )
+    try:
+        # The agent response might have markdown code blocks, so we need to extract JSON
+        response_text = str(raw_response)
+
+        # Try to find JSON in the response (handles markdown code blocks)
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+        else:
+            # Try to find raw JSON object
+            json_match = re.search(r'\{.*"gems".*\}', response_text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+            else:
+                json_str = response_text
+
+        # Parse the JSON
+        parsed_data = json.loads(json_str)
+
+        # Validate that we have the gems array
+        if "gems" in parsed_data and isinstance(parsed_data["gems"], list):
+            return parsed_data
+        else:
+            raise ValueError("Invalid response format: missing 'gems' array")
+
+    except Exception as e:
+        print(f"Error parsing agent response: {e}")
+        print(f"Raw response: {raw_response[:500]}...")
+
+        # Return fallback mock data
+        return {
+            "gems": [
+                {
+                    "placeName": "Unable to parse results",
+                    "address": "Please try a different search query",
+                    "coordinates": {"lat": 0, "lng": 0},
+                    "rating": 0,
+                    "reviewCount": 0,
+                    "photos": ["https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800"],
+                    "analysis": {
+                        "whySpecial": f"Error: {str(e)}",
+                        "bestTime": "N/A",
+                        "insiderTip": "Try rephrasing your search query"
+                    }
+                }
+            ]
+        }
 
 
 @app.get("/")
@@ -116,7 +140,7 @@ async def root():
     }
 
 
-@app.post("/api/discover", response_model=DiscoveryResponse)
+@app.post("/api/discover")
 async def discover_gems(request: DiscoveryRequest):
     """
     Discover hidden outdoor gems based on search query.
@@ -127,22 +151,42 @@ async def discover_gems(request: DiscoveryRequest):
     Returns:
         DiscoveryResponse with found hidden gems
     """
+    print(f"\n{'='*60}")
+    print(f"[Backend] Received search query: {request.searchQuery}")
+    print(f"{'='*60}")
+
     try:
         import time
         start_time = time.time()
 
+        print(f"[Backend] Running agent with query: {request.searchQuery}")
+
         # Run the agent
         response = await runner.run_debug(request.searchQuery)
 
+        print(f"[Backend] Agent response received (length: {len(str(response))})")
+        print(f"[Backend] Agent response preview: {str(response)[:200]}...")
+
         # Parse response into structured format
-        result = parse_agent_response(str(response), request.searchQuery)
+        parsed_data = parse_agent_response(str(response), request.searchQuery)
 
         # Calculate actual processing time
-        result.processingTime = time.time() - start_time
+        processing_time = time.time() - start_time
 
-        return result
+        print(f"[Backend] Successfully parsed {len(parsed_data['gems'])} gems")
+        print(f"[Backend] Processing time: {processing_time:.2f}s")
+
+        # Return the response with processing time and query
+        return {
+            "gems": parsed_data["gems"],
+            "processingTime": processing_time,
+            "query": request.searchQuery
+        }
 
     except Exception as e:
+        print(f"[Backend] ERROR in discover_gems endpoint: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Error processing request: {str(e)}"
@@ -160,4 +204,11 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
+    print("\n" + "="*60)
+    print("🚀 Starting I Got You Backend API Server")
+    print("="*60)
+    print("📍 Server will run at: http://localhost:8000")
+    print("📚 API Docs available at: http://localhost:8000/docs")
+    print("🔄 Waiting for requests...")
+    print("="*60 + "\n")
     uvicorn.run(app, host="0.0.0.0", port=8000)

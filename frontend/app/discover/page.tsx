@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchForm } from '@/components/discover/SearchForm';
 import { ResultCard } from '@/components/results/ResultCard';
+import { BackendStatusBanner } from '@/components/BackendStatusBanner';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { HiddenGem } from '@/types';
@@ -18,6 +19,8 @@ export default function DiscoverPage() {
     setError(null);
     setResults(null);
 
+    console.log('[Frontend] Starting search with query:', query);
+
     try {
       const response = await fetch('/api/discover', {
         method: 'POST',
@@ -27,13 +30,23 @@ export default function DiscoverPage() {
         body: JSON.stringify({ searchQuery: query }),
       });
 
+      console.log('[Frontend] Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch results');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[Frontend] Error response:', errorData);
+
+        // Show more detailed error message
+        const errorMessage = errorData.detail || errorData.error || 'Failed to fetch results';
+        const hint = errorData.hint ? `\n\n${errorData.hint}` : '';
+        throw new Error(errorMessage + hint);
       }
 
       const data = await response.json();
+      console.log('[Frontend] Received data:', data);
       setResults(data.gems);
     } catch (err) {
+      console.error('[Frontend] Search error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
@@ -42,6 +55,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--mint-cream)] to-white">
+      <BackendStatusBanner />
       <div className="container mx-auto px-4 py-12">
         {/* Back button */}
         <Link
