@@ -1,13 +1,51 @@
---- Security ---
+# Environment Variables
+.env
+.env.local
+.env.*.local
+!.env.example
 
-IGotYou_Agent/.env
-**/.env
-
---- python  ---
-IGotYou-Agent/__pycache__/
-
-
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+.venv/
+dist/
+build/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
 
---- macOS ---
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/out/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.cursor/
+
+# OS
 .DS_Store
+Thumbs.db
+Desktop.ini
+*~
+
+# Logs & Temp
+*.log
+npm-debug.log*
+.running_servers.pid
+*.tmp
+*.temp
+
+# Testing
+TEST_RESULTS.md
+coverage/

@@ -1,4 +1,11 @@
 import type { NextConfig } from "next";
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables from the root .env file (parent directory)
+// This ensures Next.js can access the .env file located in the project root
+// rather than looking for it in the frontend directory
+config({ path: resolve(__dirname, '../.env') });
 
 const nextConfig: NextConfig = {
   images: {

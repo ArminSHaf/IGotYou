@@ -1,10 +1,17 @@
-# Core dependencies for IGotYou Agent
-# Google ADK for building AI agents
+# IGotYou Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+fastapi
+uvicorn[standard]
+pydantic
+
+# AI & Agent
 google-adk
-
-# Python dotenv for environment variable management
-python-dotenv
-
-# Google GenAI SDK (may be included with google-adk, but explicit for clarity)
 google-genai
 
+# Google Services
+googlemaps
+
+# Utilities
+python-dotenv
