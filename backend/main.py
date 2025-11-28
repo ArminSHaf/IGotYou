@@ -187,8 +187,55 @@ class DiscoveryResponse(BaseModel):
 
 
 # ============================================================================
-# RESPONSE PARSING HELPER
+# RESPONSE PARSING HELPERS
 # ============================================================================
+
+def _find_gems_json(text: str) -> str | None:
+    """
+    Find JSON object containing "gems" key using brace-counting algorithm.
+    
+    This is more robust than greedy regex (r'{.*"gems".*}') because:
+    - Greedy regex matches from ANY '{' to ANY '}' in the response
+    - If the agent response has stray braces like "text { } {"gems": [...]} more"
+      the regex would capture everything from the first { to last }
+    - Brace-counting finds the correctly balanced JSON object
+    
+    Args:
+        text: Raw response text that may contain JSON
+    
+    Returns:
+        str: The extracted JSON string, or None if not found
+    
+    Example:
+        Input:  'Here is the result: {"gems": [{"name": "Beach"}]} Great!'
+        Output: '{"gems": [{"name": "Beach"}]}'
+    """
+    # First, find the "gems" key in the text
+    gems_idx = text.find('"gems"')
+    if gems_idx == -1:
+        return None
+    
+    # Find the opening brace '{' that precedes "gems"
+    # This is the start of our JSON object
+    start_idx = text.rfind('{', 0, gems_idx)
+    if start_idx == -1:
+        return None
+    
+    # Count braces to find the matching closing brace
+    # This handles nested objects like {"gems": [{"coordinates": {"lat": 1}}]}
+    brace_count = 0
+    for i in range(start_idx, len(text)):
+        if text[i] == '{':
+            brace_count += 1  # Opening brace: increment count
+        elif text[i] == '}':
+            brace_count -= 1  # Closing brace: decrement count
+            if brace_count == 0:
+                # Found matching closing brace - extract the JSON substring
+                return text[start_idx:i + 1]
+    
+    # Unbalanced braces - couldn't find matching close
+    return None
+
 
 def parse_agent_response(raw_response: str, query: str) -> dict:
     """
@@ -212,15 +259,22 @@ def parse_agent_response(raw_response: str, query: str) -> dict:
 
         # Try to find JSON in the response (handles markdown code blocks)
         # Pattern 1: ```json ... ``` or ``` ... ```
-        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+        # 
+        # IMPORTANT: We use GREEDY matching (\{.*\}) instead of non-greedy (\{.*?\})
+        # because JSON often contains nested objects like:
+        #   {"gems": [{"coordinates": {"lat": 1, "lng": 2}}]}
+        # 
+        # Non-greedy would stop at the FIRST "}" it finds, breaking nested structures.
+        # Greedy matching captures from the first "{" to the LAST "}" in the code block,
+        # which is what we want for complete JSON extraction.
+        json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', response_text, re.DOTALL)
         if json_match:
             json_str = json_match.group(1)
         else:
-            # Pattern 2: Raw JSON object with "gems" key
-            json_match = re.search(r'\{.*"gems".*\}', response_text, re.DOTALL)
-            if json_match:
-                json_str = json_match.group(0)
-            else:
+            # Pattern 2: Find JSON object with "gems" key using brace-counting
+            # This is more robust than greedy regex which can match stray braces
+            json_str = _find_gems_json(response_text)
+            if not json_str:
                 # Assume the whole response is JSON
                 json_str = response_text
 

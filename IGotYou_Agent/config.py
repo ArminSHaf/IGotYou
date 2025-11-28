@@ -12,7 +12,7 @@ if not GOOGLE_API_KEY:
     raise ValueError("Missing GOOGLE_API_KEY in .env")
 if not GOOGLE_MAPS_API_KEY:
     raise ValueError(
-        "GOOGLE_MAPS_API not found in .env (Maps tools will fail)")
+        "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY not found in .env (Maps tools will fail)")
 
 # 2. Shared Google Maps Client
 # We create one instance here to be imported by Discovery and Analysis agents.

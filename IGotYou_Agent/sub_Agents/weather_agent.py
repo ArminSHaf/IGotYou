@@ -105,8 +105,9 @@ def enrich_gems_with_weather(gems_json: str) -> dict:
         
     except json.JSONDecodeError as e:
         print(f"❌ Error parsing gems JSON: {e}")
-        # Return the original input if we can't parse it
-        return {"error": f"Failed to parse gems JSON: {e}"}
+        # Return empty gems array to match expected return type {"gems": [...]}
+        # This ensures the Weather Agent receives the expected structure
+        return {"gems": []}
     
     # ========================================================================
     # FETCH WEATHER FOR EACH GEM
