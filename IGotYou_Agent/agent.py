@@ -10,10 +10,12 @@ from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 from google.adk.tools import AgentTool
 
 # Import API key configuration
-from config import GOOGLE_API_KEY
+# Using relative import (.) since config.py is in the same package (IGotYou_Agent)
+from .config import GOOGLE_API_KEY
 
 # Import specialized sub-agents for multi-agent workflow
-from sub_Agents import (
+# Using relative import (.) since sub_Agents is a subpackage of IGotYou_Agent
+from .sub_Agents import (
     analysis_agent,
     discovery_agent,
     recommendation_agent,
@@ -82,15 +84,29 @@ root_agent = Agent(
     STEP 3: CHECK REAL WORLD DATA (MCP)
     - Once the user picks a place, identify the **CITY** that place is located in.
     - **CRITICAL:** Do NOT search weather for the specific location name 
-    - **CORRECT:** Search weather for the CITY  name in the query (e.g., "Munich", "Berlin", "London").
-    - Use the provided Weather MCP Tool to search for that **CITY's** forecast for the next 5 days.
+    - **CORRECT:** Search weather for the CITY name in the query (e.g., "Munich", "Berlin", "London").
+    
+    **IMPORTANT DATE HANDLING FOR WEATHER API:**
+    - The weather API only supports dates within approximately 16 days into the future.
+    - **BEFORE calling the weather tool**, check if the user's requested travel date is more than 16 days away.
+    - If the date IS TOO FAR (more than ~2 weeks away), you MUST:
+      1. **Tell the user directly**: "That's a bit too far ahead for an accurate weather forecast! 
+         Weather predictions are only reliable for the next 2 weeks."
+      2. **DO NOT call the weather API** - it will fail.
+      3. **Provide helpful climate info instead**: Share typical/historical weather patterns for that 
+         destination during their planned travel month based on your knowledge.
+      4. **Example response**: "April is a bit too far for me to get an exact forecast, but here's 
+         what you can typically expect in Bali during April: temperatures around 27-30°C, 
+         humidity around 80%, and occasional afternoon rain showers as it's the tail end of wet season."
+    - If the user's requested date IS within the next 16 days, use the Weather MCP Tool to get real forecasts.
     
     STEP 4: SYNTHESIZE & ADVISE
-    - Compare the `bestTime` (from the gem recommendation) with the `Real Weather` (from the MCP tool) and suggest when is the most suitable time to go there.
+    - Compare the `bestTime` (from the gem recommendation) with the `Real Weather` (from the MCP tool) 
+      OR general climate knowledge and suggest when is the most suitable time to go there.
     - **Overlap Logic:**
         - If the gem is best at "Sunset" but it's raining at sunset today, suggest the day when is not raining!
     - **Outfit Advice:**
-        - Check the temperature. Tell the user exactly what to wear (e.g., "It's 12°C, bring a light jacket").
+        - Based on temperature (real or typical for the season), tell the user what to wear.
     """,
     tools=[
         AgentTool(agent=hidden_gem_agent),
