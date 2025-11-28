@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
-import { Search, Loader2, Sparkles } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { searchSchema, type SearchFormData } from '@/lib/validations';
 import { cn } from '@/lib/utils';
 
@@ -43,108 +42,88 @@ export function SearchForm({ onSearch, isLoading = false }: SearchFormProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Main search input */}
         <div className="relative">
-          <motion.div
+          <div
             className={cn(
-              "relative rounded-3xl border-2 transition-all",
+              "relative rounded-md border transition-all",
               errors.query
-                ? "border-red-400 bg-red-50/50"
-                : "border-[var(--emerald-muted)]/20 bg-white hover:border-[var(--eucalyptus)]/40 focus-within:border-[var(--eucalyptus)]"
+                ? "border-red-500 bg-red-50"
+                : "border-[var(--border-default)] bg-white focus-within:border-[var(--accent-blue)] focus-within:ring-2 focus-within:ring-[var(--accent-blue)]/10"
             )}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
           >
             <textarea
               {...register('query')}
               placeholder="Describe your ideal hidden gem... (e.g., 'quiet surf spot in Bali for beginners')"
               rows={4}
               disabled={isLoading}
-              className="w-full px-6 py-4 pr-14 rounded-3xl resize-none focus:outline-none bg-transparent text-gray-900 placeholder:text-gray-400"
+              className="w-full px-4 py-3 rounded-md resize-none focus:outline-none bg-transparent text-[var(--gray-900)] placeholder:text-[var(--gray-400)]"
             />
-            <div className="absolute right-4 bottom-4">
-              <Sparkles className="w-6 h-6 text-[var(--eucalyptus)]" />
-            </div>
-          </motion.div>
+          </div>
 
           {/* Error message */}
           {errors.query && (
-            <motion.p
-              className="mt-2 text-sm text-red-600 px-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <p className="mt-2 text-sm text-red-600">
               {errors.query.message}
-            </motion.p>
+            </p>
           )}
         </div>
 
         {/* Example queries */}
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-600 px-2">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-[var(--gray-600)]">
             Try these examples:
           </p>
           <div className="flex flex-wrap gap-2">
             {exampleQueries.map((example, index) => (
-              <motion.button
+              <button
                 key={index}
                 type="button"
                 onClick={() => handleExampleClick(example)}
                 disabled={isLoading}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                   selectedExample === example
-                    ? "bg-[var(--eucalyptus)] text-white shadow-md"
-                    : "bg-[var(--seafoam)] text-[var(--emerald-muted)] hover:bg-[var(--sage)] hover:shadow-sm"
+                    ? "bg-[var(--accent-blue)] text-white"
+                    : "bg-[var(--gray-100)] text-[var(--gray-700)] hover:bg-[var(--gray-200)]"
                 )}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 {example}
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
 
         {/* Submit button */}
-        <motion.button
+        <button
           type="submit"
           disabled={isLoading}
           className={cn(
-            "w-full py-4 px-8 rounded-full font-semibold text-lg shadow-lg transition-all flex items-center justify-center gap-3",
+            "w-full py-2.5 px-4 rounded-md font-semibold transition-colors flex items-center justify-center gap-2",
             isLoading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-[var(--eucalyptus)] to-[var(--forest-light)] text-white hover:shadow-xl hover:scale-105"
+              ? "bg-[var(--gray-400)] text-white cursor-not-allowed"
+              : "bg-[var(--accent-green)] text-white hover:bg-[var(--accent-green-light)]"
           )}
-          whileHover={!isLoading ? { scale: 1.05 } : {}}
-          whileTap={!isLoading ? { scale: 0.95 } : {}}
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-6 h-6 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
               Searching for hidden gems...
             </>
           ) : (
             <>
-              <Search className="w-6 h-6" />
+              <Search className="w-5 h-5" />
               Discover Hidden Gems
             </>
           )}
-        </motion.button>
+        </button>
 
         {/* Info text */}
         {isLoading && (
-          <motion.p
-            className="text-center text-sm text-gray-600"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <p className="text-center text-sm text-[var(--gray-600)]">
             This usually takes 15-30 seconds. We're analyzing reviews from multiple sources...
-          </motion.p>
+          </p>
         )}
       </form>
     </div>

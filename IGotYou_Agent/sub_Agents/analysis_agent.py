@@ -4,7 +4,7 @@ from google.genai import types
 import googlemaps
 
 try:
-    from config import gmaps_client
+    from ..config import gmaps_client
 except ImportError:
     print("WARNING: Could not import 'gmaps_client' from config.")
     gmaps_client = None

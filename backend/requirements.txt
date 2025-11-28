@@ -4,3 +4,4 @@ pydantic
 python-dotenv
 google-adk
 google-genai
+googlemaps

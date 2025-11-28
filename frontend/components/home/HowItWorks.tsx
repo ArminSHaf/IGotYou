@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Search, Sparkles, MapPin, Camera } from 'lucide-react';
 
 const steps = [
@@ -28,58 +27,41 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-white">
+    <section id="how-it-works" className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-[var(--emerald-muted)] mb-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--gray-900)] mb-3">
             How It Works
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-[var(--gray-600)] max-w-2xl mx-auto">
             Four simple steps to discover your next adventure
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {steps.map((step, index) => (
-            <motion.div
+            <div
               key={index}
-              className="relative"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="relative bg-white rounded-lg border border-[var(--border-default)] p-6 hover:border-[var(--gray-300)] hover:shadow-md transition-all"
             >
-              <div className="bg-gradient-to-br from-[var(--mint-cream)] to-[var(--seafoam)] rounded-3xl p-8 h-full border border-[var(--emerald-muted)]/10 hover:border-[var(--eucalyptus)]/30 transition-all hover:shadow-lg">
-                {/* Step number */}
-                <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-to-br from-[var(--eucalyptus)] to-[var(--forest-light)] text-white font-bold text-xl flex items-center justify-center shadow-lg">
-                  {index + 1}
-                </div>
-
-                {/* Icon */}
-                <div className="mb-6 inline-flex p-4 rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm">
-                  <step.icon className="w-8 h-8 text-[var(--eucalyptus)]" />
-                </div>
-
-                {/* Content */}
-                <h3 className="text-xl font-bold text-[var(--emerald-muted)] mb-3">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {step.description}
-                </p>
+              {/* Step number */}
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--gray-100)] text-[var(--gray-700)] font-semibold text-sm mb-4">
+                {index + 1}
               </div>
 
-              {/* Connector line (not on last item) */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-[var(--eucalyptus)] to-[var(--forest-light)]/30" />
-              )}
-            </motion.div>
+              {/* Icon */}
+              <div className="mb-4">
+                <step.icon className="w-6 h-6 text-[var(--gray-700)]" />
+              </div>
+
+              {/* Content */}
+              <h3 className="text-base font-semibold text-[var(--gray-900)] mb-2">
+                {step.title}
+              </h3>
+              <p className="text-sm text-[var(--gray-600)] leading-relaxed">
+                {step.description}
+              </p>
+            </div>
           ))}
         </div>
       </div>

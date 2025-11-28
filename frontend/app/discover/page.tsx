@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { SearchForm } from '@/components/discover/SearchForm';
 import { ResultCard } from '@/components/results/ResultCard';
 import { BackendStatusBanner } from '@/components/BackendStatusBanner';
@@ -54,96 +53,80 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--mint-cream)] to-white">
+    <div className="min-h-screen bg-white">
       <BackendStatusBanner />
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Back button */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[var(--emerald-muted)] hover:text-[var(--eucalyptus)] transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-[var(--gray-700)] hover:text-[var(--gray-900)] transition-colors mb-6"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Home</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-medium text-sm">Back to Home</span>
         </Link>
 
         {/* Search section */}
-        <motion.div
-          className="mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-[var(--emerald-muted)] mb-4">
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--gray-900)] mb-3">
               Discover Your Next Adventure
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base text-[var(--gray-600)] max-w-2xl mx-auto">
               Tell us what kind of hidden gem you're looking for, and let AI find the perfect spots for you.
             </p>
           </div>
 
           <SearchForm onSearch={handleSearch} isLoading={isLoading} />
-        </motion.div>
+        </div>
 
         {/* Error state */}
         {error && (
-          <motion.div
-            className="max-w-3xl mx-auto p-6 bg-red-50 border border-red-200 rounded-2xl text-red-700"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h3 className="font-semibold mb-2">Oops! Something went wrong</h3>
-            <p>{error}</p>
-          </motion.div>
+          <div className="max-w-3xl mx-auto p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
+            <h3 className="font-semibold mb-1 text-sm">Oops! Something went wrong</h3>
+            <p className="text-sm">{error}</p>
+          </div>
         )}
 
         {/* Results section */}
         {results && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-[var(--emerald-muted)] mb-2">
+          <div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-[var(--gray-900)] mb-2">
                 Hidden Gems Found
               </h2>
-              <p className="text-gray-600">
+              <p className="text-[var(--gray-600)]">
                 We found {results.length} amazing {results.length === 1 ? 'place' : 'places'} for you
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 gap-6 max-w-5xl mx-auto">
               {results.map((gem, index) => (
                 <ResultCard key={index} gem={gem} index={index} />
               ))}
             </div>
 
             {/* Search again button */}
-            <div className="text-center mt-12">
+            <div className="text-center mt-10">
               <button
                 onClick={() => {
                   setResults(null);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="px-8 py-4 rounded-full border-2 border-[var(--emerald-muted)] text-[var(--emerald-muted)] font-semibold hover:bg-[var(--emerald-muted)] hover:text-white transition-all"
+                className="px-5 py-2.5 rounded-md border border-[var(--border-default)] text-[var(--gray-700)] font-semibold hover:bg-[var(--hover-bg)] hover:border-[var(--gray-300)] transition-colors"
               >
                 Search Again
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Empty state */}
         {results && results.length === 0 && (
-          <motion.div
-            className="max-w-3xl mx-auto text-center p-12 bg-white rounded-2xl border border-[var(--emerald-muted)]/20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h3 className="text-2xl font-bold text-[var(--emerald-muted)] mb-4">
+          <div className="max-w-3xl mx-auto text-center p-8 bg-[var(--gray-50)] rounded-lg border border-[var(--border-default)]">
+            <h3 className="text-xl font-bold text-[var(--gray-900)] mb-3">
               No hidden gems found
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--gray-600)] mb-6">
               Try adjusting your search query or being more specific about the location and activity type.
             </p>
             <button
@@ -151,11 +134,11 @@ export default function DiscoverPage() {
                 setResults(null);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-[var(--eucalyptus)] to-[var(--forest-light)] text-white font-semibold hover:shadow-lg transition-all"
+              className="px-5 py-2.5 rounded-md bg-[var(--accent-green)] text-white font-semibold hover:bg-[var(--accent-green-light)] transition-colors"
             >
               Try Another Search
             </button>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

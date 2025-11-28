@@ -6,10 +6,10 @@ from google.genai import types
 from google.adk.runners import InMemoryRunner
 
 # Import API key configuration
-from config import GOOGLE_API_KEY
+from .config import GOOGLE_API_KEY
 
 # Import specialized sub-agents for multi-agent workflow
-from sub_Agents import (
+from .sub_Agents import (
     analysis_agent,
     discovery_agent,
     recommendation_agent,

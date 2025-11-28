@@ -5,25 +5,25 @@ import { Compass } from 'lucide-react';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--emerald-muted)]/20 bg-white/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-[var(--border-default)] bg-white">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-          <Compass className="h-6 w-6 text-[var(--eucalyptus)]" />
-          <span className="font-bold text-xl text-[var(--emerald-muted)]">
+        <Link href="/" className="flex items-center space-x-2 hover:opacity-70 transition-opacity">
+          <Compass className="h-5 w-5 text-[var(--gray-900)]" />
+          <span className="font-semibold text-base text-[var(--gray-900)]">
             I Got You
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-4">
           <Link
             href="/#how-it-works"
-            className="text-sm font-medium text-[var(--teal-soft)] hover:text-[var(--eucalyptus)] transition-colors"
+            className="text-sm font-medium text-[var(--gray-700)] hover:text-[var(--gray-900)] transition-colors px-3 py-2"
           >
             How It Works
           </Link>
           <Link
             href="/discover"
-            className="px-6 py-2 rounded-full bg-gradient-to-r from-[var(--eucalyptus)] to-[var(--forest-light)] text-white font-medium hover:shadow-lg hover:scale-105 transition-all"
+            className="px-4 py-1.5 rounded-md bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[var(--accent-green-light)] transition-colors"
           >
             Start Discovering
           </Link>
@@ -32,7 +32,7 @@ export function Header() {
         {/* Mobile menu button */}
         <Link
           href="/discover"
-          className="md:hidden px-4 py-2 rounded-full bg-gradient-to-r from-[var(--eucalyptus)] to-[var(--forest-light)] text-white text-sm font-medium"
+          className="md:hidden px-3 py-1.5 rounded-md bg-[var(--accent-green)] text-white text-sm font-medium hover:bg-[var(--accent-green-light)] transition-colors"
         >
           Discover
         </Link>
