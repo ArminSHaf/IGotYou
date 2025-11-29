@@ -1,0 +1,36 @@
+[
+    {
+        "test_case_id": "hidden_gems_tulum_search",
+        "query": "yes! actually I need recomendations for gems in Tulum as im going to travel next week there",
+        "expected_tool_use": [
+            {
+                "tool_name": "Hidden_Gem_Finder",
+                "tool_input": {
+                    "request": "hidden outdoor gems in Tulum"
+                }
+            }
+        ],
+        "reference": "The assistant should provide hidden gem recommendations in Tulum, including unique cenotes and outdoor locations. Key recommendations should include Vesica Tulum | Cenote Club (4.9 rating), Cenote Caracol (4.8 rating with unique cave exploration), and Cenote El Pit (4.8 rating, recommended for advanced divers with stunning underwater features)."
+    },
+    {
+        "test_case_id": "diving_location_selection_tulum",
+        "query": "3 i wanna dive there",
+        "expected_tool_use": [
+            {
+                "tool_name": "get_weather_byDateTimeRange",
+                "tool_input": {
+                    "city": "Tulum",
+                    "start_date": "2025-11-29",
+                    "end_date": "2025-12-13"
+                }
+            }
+        ],
+        "reference": "After the user selects Cenote El Pit for diving, the assistant should proactively retrieve weather information for Tulum during the user's travel period. The response should include a comprehensive weather analysis covering temperature patterns, precipitation forecast, wind conditions, and specific recommendations for diving conditions."
+    },
+    {
+        "test_case_id": "initial_greeting_outdoor_gems",
+        "query": "hello",
+        "expected_tool_use": [],
+        "reference": "The assistant should greet the user warmly and ask about what kind of outdoor hidden gems they're interested in. The response should be conversational and invite the user to specify their preferences or location of interest."
+    }
+]
