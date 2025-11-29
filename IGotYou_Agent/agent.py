@@ -9,12 +9,23 @@ from mcp import StdioServerParameters
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 from google.adk.tools import AgentTool
 
-from config import GOOGLE_API_KEY
-from sub_Agents import (
-    analysis_agent,
-    discovery_agent,
-    recommendation_agent,
-)
+try:
+    # 1. For Pytest
+    from .config import GOOGLE_API_KEY
+    from .sub_Agents import (
+        analysis_agent,
+        discovery_agent,
+        recommendation_agent,
+    )
+except ImportError:
+    # 2. For 'python agent.py'
+    from config import GOOGLE_API_KEY
+    from sub_Agents import (
+        analysis_agent,
+        discovery_agent,
+        recommendation_agent,
+    )
+
 
 current_time_str = datetime.now().strftime("%A, %B %d, %Y")
 
@@ -53,7 +64,6 @@ root_agent = Agent(
     description="Orchestrates the user journey: Finds gems -> Asks User Choice -> Checks Weather -> Advises.",
     instruction=f"""
     You are the **IGOTYOU Concierge**.
-    Current Date: {current_time_str}
     
     YOUR WORKFLOW:
     
@@ -66,10 +76,11 @@ root_agent = Agent(
     - Wait for their input.
     
     STEP 3: CHECK REAL WORLD DATA (MCP)
+    -real time date : Current Date: {current_time_str}
     - Once the user picks a place, identify the **CITY** that place is located in.
     - **CRITICAL:** Do NOT search weather for the specific location name 
     - **CORRECT:** Search weather for the CITY  name in the query (e.g., "Munich", "Berlin", "London").
-    - Use the provided Weather MCP Tool to search for that **CITY's** forecast for the next 5 days.
+    - Use the provided Weather MCP Tool to search for that **CITY's** forecast for the next 3 days.
     
     STEP 4: SYNTHESIZE & ADVISE
     - Compare the `bestTime` (from the gem recommendation) with the `Real Weather` (from the MCP tool) and suggest when is the most suitable time to go there.

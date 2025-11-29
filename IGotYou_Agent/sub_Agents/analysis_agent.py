@@ -12,35 +12,62 @@ except ImportError:
 
 def analysis_tool(cands: list[dict]) -> dict:
     """
-    Takes a list of dictionaries of candidates.
-    1. Filters them using Python (Reviews < 300, Rating > 4.0).
-    2. Sorts by rating.
-    3. Fetches details (reviews) for the top 3 'survivors'.
+    Takes a list of candidates.
+    1. Filters OUT businesses (restaurants, cafes, shops).
+    2. Applies hidden gem criteria (low reviews, decent rating).
+    3. Sorts by rating.
+    4. Fetches details for top 3.
     """
     if not gmaps_client:
         return [{"error": "APIKey missing"}]
 
     print(f"📊 Analysis for : '{len(cands)}' candidates...")
+
+    # keywords that indicate a business, not a natural place
+    BUSINESS_KEYWORDS = [
+        'restaurant', 'cafe', 'coffee', 'hotel', 'hostel', 'inn',
+        'shop', 'store', 'market', 'bar', 'pub', 'club', 'nightclub',
+        'bakery', 'bistro', 'eatery', 'dining', 'diner', 'pizzeria',
+        'mall', 'boutique', 'salon', 'spa', 'gym', "school", "instructor", "rental", "center"
+    ]
+    # google places types that are businesses
+    BUSINESS_TYPES = [
+        'restaurant', 'cafe', 'bar', 'food', 'meal_takeaway',
+        'lodging', 'store', 'shopping_mall', 'department_store',
+        'bakery', 'night_club', 'casino', 'school', 'travel_agency', 'Ski_school'
+    ]
+
     count_reviews = 0
     for c in cands:
-        count_reviews += c.get('reviews')
+        count_reviews += c.get('reviews', 0)
 
-    mean_value = count_reviews / len(cands)
-
+    mean_value = count_reviews / len(cands) if cands else 0
     mean_value_over_two = mean_value / 2
 
     potential_hidden_gems = []
     for p in cands:
-        rev = p.get('reviews')
-        rate = p.get('rating')
+        rev = p.get('reviews', 0)
+        rate = p.get('rating', 0)
+        name_lower = p.get('name', '').lower()
+        place_types = p.get('types', [])
 
+        # skip if name contains business keywords
+        is_business_name = any(kw in name_lower for kw in BUSINESS_KEYWORDS)
+        # skip if place type is a business
+        is_business_type = any(bt in place_types for bt in BUSINESS_TYPES)
+
+        if is_business_name or is_business_type:
+            print(f"  Skipping business: {p.get('name')}")
+            continue
+
+        # hidden gem criteria: 10+ reviews, below avg, decent rating
         if 10 <= rev <= mean_value_over_two and rate >= 3.5:
             potential_hidden_gems.append(p)
 
     if not potential_hidden_gems:
         return {
             "status": "zero_gems",
-            "message": "No places met the HIdden gem logic."
+            "message": "No natural places met the hidden gem criteria."
         }
 
     # sort by rating

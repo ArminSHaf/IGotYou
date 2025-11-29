@@ -13,18 +13,18 @@ except ImportError:
 # 1. search Tool
 def search_places_tool(query: str) -> list[dict]:
     """
-    Searches for outdoor places.
-    Returns ONLY the specific fields needed for the 'Hidden Gem' filter to save tokens.
+    Searches for outdoor NATURAL places (parks, viewpoints, trails, etc).
+    Biases query toward nature spots, not businesses.
     """
     if not gmaps_client:
         return [{"error": "APIKey missing"}]
 
-    print(f"🔎 Discovery Agent searching for: '{query}'...")
+    # bias the query toward natural outdoor places
+    enhanced_query = f"{query}"
+    print(f"🔎 Discovery Agent searching for: '{enhanced_query}'...")
 
     try:
-        response = gmaps_client.places(
-            query=query
-        )
+        response = gmaps_client.places(query=enhanced_query)
         cands = []
         if response.get("status") == "OK" and "results" in response:
             for p in response['results']:
@@ -33,12 +33,14 @@ def search_places_tool(query: str) -> list[dict]:
                     "place_id": p.get('place_id'),
                     "rating": p.get('rating', 0),
                     "reviews": p.get('user_ratings_total', 0),
-                    # location is inside the geometry field https://developers.google.com/maps/documentation/places/web-service/legacy/search-text#maps_http_places_textsearch-txt
-                    "loc": p.get('geometry', {}).get('location')
+                    "loc": p.get('geometry', {}).get('location'),
+                    # needed for business filtering
+                    "types": p.get('types', [])
                 })
         elif response.get("status") != "OK":
             print("⚠️ API returned ZERO_RESULTS / no result found.")
             return []
+        print(f"Found {len(cands)} candidates")
         return cands
 
     except Exception as e:
@@ -60,10 +62,14 @@ discovery_agent = Agent(
         model="gemini-2.5-flash-lite",
         retry_options=retry_config
     ),
-    description="Specialist in finding raw lists of outdoor locations using Google Places API.",
+    description="Finds NATURAL outdoor locations (parks, viewpoints, trails) using Google Places API.",
     instruction="""
     You are the **Discovery Agent**. 
-    Use the `search_places_tool` to find raw candidates for the user's request.
+    Focus on NATURAL outdoor places: parks, viewpoints, gardens, trails, beaches.
+    NOT businesses like restaurants, cafes, or shops.
+    **CRUCIAL** refine the query in which will result landmarks and natural places - 
+        e.g -> Find me a great ski resort in Sibiu -> Ski resort sibiu
+    Use the `search_places_tool` to find raw candidates.
     Do not filter them. Just find them.
     """,
     tools=[search_places_tool],

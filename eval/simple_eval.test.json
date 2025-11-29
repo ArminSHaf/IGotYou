@@ -10,57 +10,11 @@
                 }
             }
         ],
-        "reference": "The assistant should provide hidden gem recommendations in Tulum, including unique cenotes and outdoor locations. Key recommendations should include Vesica Tulum | Cenote Club (4.9 rating), Cenote Caracol (4.8 rating with unique cave exploration), and Cenote El Pit (4.8 rating, recommended for advanced divers with stunning underwater features).",
-        "mock_responses": {
-            "Hidden_Gem_Finder": {
-                "mock_tool_outputs": [
-                    {
-                        "output": {
-                            "gems": [
-                                {
-                                    "placeName": "Vesica Tulum | Cenote Club",
-                                    "address": "PARCELA No. 198Z-2P-1 EJIDO, 77760 Tulum, Q.R., Mexico",
-                                    "rating": 4.9,
-                                    "reviewCount": 2561,
-                                    "analysis": {
-                                        "whySpecial": "High-quality experience with exceptional service, stunning cenote views, and wellness activities",
-                                        "bestTime": "Earlier in the day or weekdays for a more serene experience",
-                                        "insiderTip": "Book massages in advance and clarify entrance fee details"
-                                    }
-                                },
-                                {
-                                    "placeName": "Cenote Caracol",
-                                    "address": "77772 Tulum, Quintana Roo, Mexico",
-                                    "rating": 4.8,
-                                    "reviewCount": 425,
-                                    "analysis": {
-                                        "whySpecial": "Unique cave cenotes accessible via torchlight through narrow rivers",
-                                        "bestTime": "Early morning before tourist crowds",
-                                        "insiderTip": "Access road not well-marked, pay attention to signs"
-                                    }
-                                },
-                                {
-                                    "placeName": "Cenote El Pit",
-                                    "address": "77774 Tulum, Quintana Roo, Mexico",
-                                    "rating": 4.8,
-                                    "reviewCount": 220,
-                                    "analysis": {
-                                        "whySpecial": "Extraordinary dive spot with breathtaking light beams and ancient Mayan artifacts",
-                                        "bestTime": "Ideal for advanced and experienced divers",
-                                        "insiderTip": "Not recommended for novice divers due to depth and technical passages"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        }
+        "reference": "The assistant should provide hidden gem recommendations in Tulum, including unique cenotes and outdoor locations. Key recommendations should include Vesica Tulum | Cenote Club (4.9 rating), Cenote Caracol (4.8 rating with unique cave exploration), and Cenote El Pit (4.8 rating, recommended for advanced divers with stunning underwater features)."
     },
     {
         "test_case_id": "diving_location_selection_tulum",
         "query": "3 i wanna dive there",
-        "context": "User previously received recommendations for 3 cenotes in Tulum and selected option 3 (Cenote El Pit) for diving",
         "expected_tool_use": [
             {
                 "tool_name": "get_weather_byDateTimeRange",
@@ -71,44 +25,12 @@
                 }
             }
         ],
-        "reference": "After the user selects Cenote El Pit for diving, the assistant should proactively retrieve weather information for Tulum during the user's travel period. The response should include a comprehensive weather analysis covering temperature patterns (lows in low 20s°C, highs in low 30s°C), precipitation forecast (light to moderate drizzle from December 2nd onwards), wind conditions (5-15 km/h), and specific recommendations for diving conditions. Best diving conditions are expected November 29th - December 1st with clearer skies.",
-        "mock_responses": {
-            "get_weather_byDateTimeRange": {
-                "mock_tool_outputs": [
-                    {
-                        "output": {
-                            "city": "Tulum",
-                            "latitude": 20.21173,
-                            "longitude": -87.46325,
-                            "start_date": "2025-11-29",
-                            "end_date": "2025-12-13",
-                            "summary": {
-                                "temperature_range": {
-                                    "min": 17.5,
-                                    "max": 30.7,
-                                    "average": 23.5
-                                },
-                                "precipitation": {
-                                    "total_days_with_rain": 8,
-                                    "pattern": "Light to moderate drizzle from December 2nd onwards"
-                                },
-                                "wind": {
-                                    "average_speed": "5-15 km/h",
-                                    "direction": "North or Northeast"
-                                },
-                                "best_diving_days": "November 29th - December 1st (clearer conditions)"
-                            }
-                        }
-                    }
-                ]
-            }
-        }
+        "reference": "After the user selects Cenote El Pit for diving, the assistant should proactively retrieve weather information for Tulum during the user's travel period. The response should include a comprehensive weather analysis covering temperature patterns, precipitation forecast, wind conditions, and specific recommendations for diving conditions."
     },
     {
         "test_case_id": "initial_greeting_outdoor_gems",
         "query": "hello",
         "expected_tool_use": [],
-        "reference": "The assistant should greet the user warmly and ask about what kind of outdoor hidden gems they're interested in. The response should be conversational and invite the user to specify their preferences or location of interest.",
-        "mock_responses": {}
+        "reference": "The assistant should greet the user warmly and ask about what kind of outdoor hidden gems they're interested in. The response should be conversational and invite the user to specify their preferences or location of interest."
     }
 ]
