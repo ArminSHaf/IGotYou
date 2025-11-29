@@ -1,0 +1,22 @@
+{
+    "worker_model": "gemini-2.5-flash",
+    "critic_model": "gemini-2.5-flash",
+    "criteria": {
+        "tool_selection": {
+            "description": "Evaluates if the agent selected the appropriate tools for the task",
+            "weight": 0.3
+        },
+        "response_quality": {
+            "description": "Evaluates the quality and relevance of the agent's response",
+            "weight": 0.3
+        },
+        "proactive_assistance": {
+            "description": "Evaluates if the agent proactively anticipated user needs (e.g., checking weather after diving location selection)",
+            "weight": 0.2
+        },
+        "accuracy": {
+            "description": "Evaluates if the information provided is accurate and matches the reference",
+            "weight": 0.2
+        }
+    }
+}
