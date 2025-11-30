@@ -5,7 +5,7 @@ This file provides a REST API interface to the IGotYou Python agent.
 It handles CORS, request validation, and response formatting.
 """
 
-from IGotYou_Agent import root_agent, runner
+
 import re
 import asyncio
 from typing import List, Optional
@@ -24,6 +24,7 @@ sys.path.insert(0, str(project_root / "IGotYou_Agent"))
 
 
 # Import the agent (must be after path setup)
+from IGotYou_Agent import root_agent, runner
 
 app = FastAPI(
     title="I Got You API",
@@ -46,6 +47,10 @@ app.add_middleware(
 # Pydantic Models
 class DiscoveryRequest(BaseModel):
     searchQuery: str = Field(..., min_length=10, max_length=200)
+
+
+class SelectionRequest(BaseModel):
+    selection: str = Field(..., min_length=1)
 
 
 class Coordinates(BaseModel):
@@ -362,11 +367,152 @@ async def discover_gems(request: DiscoveryRequest):
         response = await runner.run_debug(request.searchQuery)
 
         print(
-            f"[Backend] Agent response received (length: {len(str(response))})")
-        print(f"[Backend] Agent response preview: {str(response)[:200]}...")
+            f"[Backend] Agent response received (type: {type(response)})")
+        
+        # Debug: Print the full response structure to understand why extraction fails
+        if isinstance(response, list):
+            for i, event in enumerate(reversed(response)):
+                if hasattr(event, 'role') and event.role == 'model':
+                    print(f"[Backend] Event {i} content: {event.content}")
+                    if hasattr(event, 'content') and hasattr(event.content, 'parts'):
+                        for part in event.content.parts:
+                            if hasattr(part, 'text'):
+                                print(f"[Backend] Part text: {part.text[:200]}...")
+                    break
+        response_text = ""
+        try:
+            # Check if response is a string (simple case)
+            if isinstance(response, str):
+                response_text = response
+            # Check if response is a list of events (from debug or complex run)
+            elif isinstance(response, list):
+                for event in reversed(response):
+                    # Check for text in model response
+                    if hasattr(event, 'role') and event.role == 'model':
+                        if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                            parts = event.content.parts
+                            text_parts = []
+                            for part in parts:
+                                if hasattr(part, 'text') and part.text:
+                                    text_parts.append(part.text)
+                            if text_parts:
+                                response_text = "".join(text_parts)
+                                break
+                    
+                    # Check for function_response (if root agent delegated to sub-agent)
+                    if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                        for part in event.content.parts:
+                            if hasattr(part, 'function_response') and part.function_response:
+                                try:
+                                    # Extract result from function response
+                                    res = part.function_response.response
+                                    if 'result' in res:
+                                        response_text = str(res['result'])
+                                        print(f"[Backend] Extracted text from function_response: {response_text[:100]}...")
+                                        break
+                                except Exception as e:
+                                    print(f"[Backend] Error extracting function response: {e}")
+                        if response_text:
+                            break
+
+            # Check if response is a single Event object
+            elif hasattr(response, 'content') and hasattr(response.content, 'parts') and response.content.parts:
+                 parts = response.content.parts
+                 text_parts = []
+                 for part in parts:
+                    if hasattr(part, 'text') and part.text:
+                        text_parts.append(part.text)
+                    # Also check function_response in single event
+                    if hasattr(part, 'function_response') and part.function_response:
+                         try:
+                            res = part.function_response.response
+                            if 'result' in res:
+                                text_parts.append(str(res['result']))
+                         except:
+                             pass
+                 if text_parts:
+                    response_text = "".join(text_parts)
+
+            # Fallback: String conversion and robust regex
+            if not response_text:
+                print("[Backend] No structured text found in discovery response, trying regex...")
+                response_str = str(response)
+                print(f"[Backend] RAW RESPONSE DUMP: {response_str[:3000]}")
+                
+                # Strategy 1: Look for the specific JSON structure we expect
+                # The discovery agent returns {"gems": ...}
+                import json
+                start_marker = '{"gems":'
+                start_idx = response_str.find(start_marker)
+                
+                if start_idx != -1:
+                    print("[Backend] Found JSON start marker in discovery response")
+                    candidate = response_str[start_idx:]
+                    json_found = False
+                    for i in range(len(candidate), 10, -1):
+                        sub = candidate[:i]
+                        try:
+                            data = json.loads(sub)
+                            if "gems" in data:
+                                response_text = sub # Use the valid JSON string
+                                json_found = True
+                                print("[Backend] Successfully extracted JSON via brute force")
+                                break
+                        except:
+                            pass
+                
+                # Strategy 2: Regex for text='...' or text="..." (Backup)
+                if not response_text:
+                    import re
+                    # Use re.DOTALL to match newlines
+                    matches = re.findall(r"text=(['\"])((?:(?!\1).|\\.)*)\1", response_str, re.DOTALL)
+                    if matches:
+                        response_text = matches[-1][1]
+                        response_text = response_text.replace("\\'", "'").replace('\\"', '"').replace('\\n', '\n')
+                
+                # Strategy 3: Brute force JSON find (if regex failed or returned non-JSON)
+                if not response_text or "gems" not in response_text:
+                     print("[Backend] Regex failed or no gems, trying brute force JSON search...")
+                     # Find the last occurrence of "gems": [
+                     json_start = response_str.rfind('{"gems":')
+                     if json_start == -1:
+                         json_start = response_str.rfind("{'gems':")
+                     
+                     if json_start != -1:
+                         # Try to find the matching closing brace
+                         brace_count = 0
+                         for i in range(json_start, len(response_str)):
+                             char = response_str[i]
+                             if char == '{':
+                                 brace_count += 1
+                             elif char == '}':
+                                 brace_count -= 1
+                                 if brace_count == 0:
+                                     response_text = response_str[json_start:i+1]
+                                     print(f"[Backend] Brute force found JSON: {response_text[:50]}...")
+                                     break
+
+                if not response_text:
+                     # CRITICAL: Do NOT return the raw event dump.
+                     response_text = "I couldn't find any hidden gems matching your criteria. Please try a different query."
+
+            # Final safety check
+            if "Event(" in response_text or "model_version=" in response_text:
+                 # One last try to extract JSON if we have a raw dump
+                 if '{"gems":' in response_text:
+                     # It's ugly but maybe valid JSON is inside
+                     pass 
+                 else:
+                     response_text = "I couldn't find any hidden gems matching your criteria. Please try a different query."
+
+        except Exception as e:
+            print(f"[Backend] Error extracting text from response: {e}")
+            response_text = "Error processing response."
+
+        print(f"[Backend] Extracted response text preview: {response_text[:200]}...")
 
         # Parse JSON response from recommendation agent
-        parsed_data = parse_agent_response(str(response), request.searchQuery)
+        parsed_data = parse_agent_response(response_text, request.searchQuery)
 
         # Calculate actual processing time
         processing_time = time.time() - start_time
@@ -377,6 +523,13 @@ async def discover_gems(request: DiscoveryRequest):
 
         # The recommendation agent now returns data in the correct format
         gems = parsed_data.get("gems", [])
+
+        # Validate and fix coordinates
+        for gem in gems:
+            if "coordinates" not in gem or not gem["coordinates"]:
+                gem["coordinates"] = {"lat": 0, "lng": 0}
+            elif "lat" not in gem["coordinates"] or "lng" not in gem["coordinates"]:
+                 gem["coordinates"] = {"lat": 0, "lng": 0}
 
         # Return the response with processing time and query
         return {
@@ -395,13 +548,261 @@ async def discover_gems(request: DiscoveryRequest):
         )
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up resources on shutdown"""
+@app.post("/api/select")
+async def select_gem(request: SelectionRequest):
+    """
+    Handle user selection of a hidden gem.
+    
+    Args:
+        request: Selection request with the selected gem name
+        
+    Returns:
+        The agent's advice based on the selection and weather.
+    """
+    print(f"\n{'='*60}")
+    print(f"[Backend] Received selection: {request.selection}")
+    print(f"{'='*60}")
+    
     try:
-        await runner.close()
-    except:
-        pass
+        # Construct the user input for the agent
+        user_input = f"I choose {request.selection}"
+        
+        print(f"[Backend] Sending to agent: {user_input}")
+        
+        # Run the agent with the selection
+        # The agent should be in the state waiting for selection (Step 2 -> Step 3)
+        response = await runner.run_debug(user_input)
+        
+        # Extract text from response
+        response_text = str(response)
+        try:
+            if isinstance(response, list):
+                for event in reversed(response):
+                    # Check for text in model response
+                    if hasattr(event, 'role') and event.role == 'model':
+                        if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                            parts = event.content.parts
+                            text_parts = []
+                            for part in parts:
+                                if hasattr(part, 'text') and part.text:
+                                    text_parts.append(part.text)
+                            if text_parts:
+                                response_text = "".join(text_parts)
+                                break
+                    
+                    # Check for function_response (if root agent delegated to sub-agent)
+                    if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                        for part in event.content.parts:
+                            if hasattr(part, 'function_response') and part.function_response:
+                                try:
+                                    # Extract result from function response
+                                    res = part.function_response.response
+                                    if 'result' in res:
+                                        response_text = str(res['result'])
+                                        break
+                                except Exception as e:
+                                    print(f"[Backend] Error extracting function response: {e}")
+                        if response_text:
+                            break
+        except Exception as e:
+            print(f"[Backend] Error extracting text from response: {e}")
+
+        print(f"[Backend] Agent response received: {response_text[:200]}...")
+        
+        # Try to parse response_text as JSON
+        advice_data = response_text
+        try:
+            # Clean up potential markdown code blocks
+            clean_text = response_text.strip()
+            if clean_text.startswith("```json"):
+                clean_text = clean_text[7:]
+            if clean_text.startswith("```"):
+                clean_text = clean_text[3:]
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3]
+            clean_text = clean_text.strip()
+            
+            import json
+            advice_data = json.loads(clean_text)
+        except Exception as e:
+            print(f"[Backend] Could not parse advice as JSON, returning raw text: {e}")
+            # If parsing fails, we return the raw text. 
+            # The frontend should handle both string and object.
+        return {
+            "advice": advice_data,
+            "selection": request.selection
+        }
+        
+    except Exception as e:
+        print(f"[Backend] ERROR in select_gem endpoint: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing selection: {str(e)}"
+        )
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.post("/api/chat")
+async def chat(request: ChatRequest):
+    """
+    Handle chat messages from the user about the selected gem.
+    """
+    print(f"[Backend] Received chat message: {request.message}")
+    try:
+        # Revert to run_debug as run() caused issues. 
+        # run_debug returns a list of events.
+        response = await runner.run_debug(request.message)
+        
+        # Extract text from response
+        response_text = ""
+        try:
+            # Check if response is a list of events
+            if isinstance(response, list):
+                for event in reversed(response):
+                    # Check for text in model response
+                    if hasattr(event, 'role') and event.role == 'model':
+                        if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                            parts = event.content.parts
+                            text_parts = []
+                            for part in parts:
+                                if hasattr(part, 'text') and part.text:
+                                    text_parts.append(part.text)
+                            if text_parts:
+                                response_text = "".join(text_parts)
+                                break
+                    
+                    # Check for function_response (if root agent delegated to sub-agent)
+                    if hasattr(event, 'content') and hasattr(event.content, 'parts') and event.content.parts:
+                        for part in event.content.parts:
+                            if hasattr(part, 'function_response') and part.function_response:
+                                try:
+                                    # Extract result from function response
+                                    res = part.function_response.response
+                                    if 'result' in res:
+                                        response_text = str(res['result'])
+                                        break
+                                except Exception as e:
+                                    print(f"[Backend] Error extracting function response: {e}")
+                        if response_text:
+                            break
+            
+            # Fallback: String conversion and robust regex
+            if not response_text:
+                response_text = ""
+                response_str = str(response)
+                # Removed raw dump for production
+
+                # Strategy 1: Try to find JSON directly in the string representation if it's clean
+                # The agent returns {"summary": ...}
+                # We search for this pattern and try to extract the valid JSON object
+                import json
+                start_marker = '{"summary":'
+                start_idx = response_str.find(start_marker)
+                
+                if start_idx != -1:
+                    print("[Backend] Found JSON start marker")
+                    # Try to parse increasingly shorter substrings from the end
+                    # This handles the trailing characters like ')}], ...'
+                    candidate = response_str[start_idx:]
+                    json_found = False
+                    for i in range(len(candidate), 10, -1):
+                        sub = candidate[:i]
+                        # We need to handle escaped quotes inside the string representation if they exist
+                        # But json.loads expects valid JSON. 
+                        # If the string is from repr(), it might have escaped quotes like \'
+                        # Let's try to unescape first if it looks like a python string dump
+                        try:
+                            # Try parsing as is
+                            data = json.loads(sub)
+                            if "summary" in data:
+                                response_text = data["summary"]
+                                if "outfit" in data:
+                                    response_text += f"\n\nOutfit Tip: {data['outfit']}"
+                                json_found = True
+                                print("[Backend] Successfully extracted JSON via brute force")
+                                break
+                        except:
+                            # Try unescaping \' to '
+                            try:
+                                unescaped = sub.replace("\\'", "'").replace('\\"', '"')
+                                # This might break valid JSON quotes, so it's risky.
+                                # Better to rely on the regex for the text content first.
+                                pass
+                            except:
+                                pass
+                    
+                    if not json_found:
+                         print("[Backend] Brute force JSON parse failed")
+
+                # Strategy 2: Regex for text='...' or text="..." (Backup)
+                if not response_text:
+                    import re
+                    # Regex to capture text content, handling escaped quotes
+                    # Matches text='...' or text="..."
+                    matches = re.findall(r"text=(['\"])((?:(?!\1).|\\.)*)\1", response_str)
+                    if matches:
+                        # matches[0] is the quote type, matches[1] is the content
+                        response_text = matches[-1][1]
+                        # Unescape the string
+                        response_text = response_text.replace("\\'", "'").replace('\\"', '"').replace('\\n', '\n')
+                        print(f"[Backend] Regex extracted text: {response_text[:50]}...")
+                    else:
+                        if "Event(" in response_str:
+                             print(f"[Backend] Failed to parse Event: {response_str[:200]}...")
+                             # Don't give up yet, try to find ANY text
+                             simple_text = re.findall(r"text=(['\"])((?:(?!\1).|\\.)*)\1", response_str)
+                             if simple_text:
+                                 response_text = simple_text[-1][1]
+                             else:
+                                 # CRITICAL: Do NOT return the raw event dump.
+                                 response_text = "I'm checking the details for you. Please ask me specifically about the weather or outfit advice if I missed it!"
+                        else:
+                            response_text = response_str
+
+            # Final safety check: If response_text still looks like an Event dump, replace it.
+            if "Event(" in response_text or "model_version=" in response_text:
+                response_text = "I successfully processed your request but couldn't generate a text summary. How can I help you further?"
+
+            # Clean up JSON if present
+
+            # Clean up JSON if present
+            clean_text = response_text.strip()
+            # Handle markdown code blocks
+            if "```" in clean_text:
+                code_block_match = re.search(r"```(?:json)?\s*(.*?)\s*```", clean_text, re.DOTALL)
+                if code_block_match:
+                    clean_text = code_block_match.group(1)
+            
+            # Attempt to parse as JSON if it looks like JSON
+            if clean_text.startswith("{") and clean_text.endswith("}"):
+                try:
+                    import json
+                    data = json.loads(clean_text)
+                    if "summary" in data:
+                        response_text = data["summary"]
+                        if "outfit" in data:
+                            response_text += f"\n\nOutfit Tip: {data['outfit']}"
+                    elif "response" in data:
+                         response_text = data["response"]
+                except json.JSONDecodeError:
+                    pass # Not valid JSON, treat as plain text
+                except Exception as e:
+                    print(f"[Backend] JSON parse error: {e}")
+
+        except Exception as e:
+            print(f"[Backend] Error extracting text from response: {e}")
+            response_text = "Error processing response."
+
+        print(f"[Backend] Agent response: {response_text[:200]}...")
+        return {"response": response_text}
+    except Exception as e:
+        print(f"[Backend] Error processing chat request: {e}")
+        raise HTTPException(status_code=500, detail=f"Error processing chat request: {e}")
 
 
 if __name__ == "__main__":

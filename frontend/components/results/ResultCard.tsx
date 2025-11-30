@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, MapPin, Heart, Clock, Lightbulb } from 'lucide-react';
+import { Star, MapPin, Heart, Clock, Lightbulb, Check, Loader2 } from 'lucide-react';
 import type { HiddenGem } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { MapView } from './MapView';
+import { ChatInterface } from './ChatInterface';
 
 interface ResultCardProps {
   gem: HiddenGem;
@@ -12,6 +14,36 @@ interface ResultCardProps {
 }
 
 export function ResultCard({ gem, index }: ResultCardProps) {
+  const [isSelected, setIsSelected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [advice, setAdvice] = useState<string | object | null>(null);
+
+  const handleSelect = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ selection: gem.placeName }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to select gem');
+      }
+
+      const data = await response.json();
+      setAdvice(data.advice);
+      setIsSelected(true);
+    } catch (error) {
+      console.error('Selection error:', error);
+      // Optional: Handle error state
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <motion.div
       className="bg-white rounded-3xl border border-[var(--emerald-muted)]/20 overflow-hidden shadow-lg hover:shadow-xl transition-all"
@@ -99,6 +131,36 @@ export function ResultCard({ gem, index }: ResultCardProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Selection Section */}
+      <div className="p-6 pt-0 bg-gradient-to-br from-[var(--mint-cream)] to-[var(--seafoam)]/50">
+        {!advice ? (
+          <button
+            onClick={handleSelect}
+            disabled={isLoading}
+            className="w-full py-3 px-6 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Checking Weather...
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5" />
+                Select this Gem
+              </>
+            )}
+          </button>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+          >
+            <ChatInterface initialAdvice={advice} placeName={gem.placeName} />
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );
