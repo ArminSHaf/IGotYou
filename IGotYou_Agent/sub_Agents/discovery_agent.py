@@ -70,7 +70,13 @@ discovery_agent = Agent(
     **CRUCIAL** refine the query in which will result landmarks and natural places - 
         e.g -> Find me a great ski resort in Sibiu -> Ski resort sibiu
     Use the `search_places_tool` to find raw candidates.
-    Do not filter them. Just find them.
+    
+    **CRITICAL OUTPUT RULE:**
+    1. Run the tool `search_places_tool`.
+    2. The tool returns a list of objects.
+    3. You MUST output that list as a valid JSON string.
+    4. **IMPORTANT:** Ensure every object in the JSON has the `place_id` field. Do not omit it.
+    5. Do not add any conversational text. Just the JSON.
     """,
     tools=[search_places_tool],
 )

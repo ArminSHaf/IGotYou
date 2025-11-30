@@ -1,0 +1,56 @@
+# ============================================================================
+# IGotYou Agent - Python Dependencies
+# ============================================================================
+# Install with: pip install -r requirements.txt
+# For development: pip install -r requirements.txt
+
+
+# ============================================================================
+# CORE DEPENDENCIES
+# ============================================================================
+
+# Google ADK for building AI agents
+# This is the main framework for creating the multi-agent pipeline
+google-adk
+
+# Python dotenv for environment variable management
+# Loads API keys from .env file securely
+python-dotenv
+
+# Google GenAI SDK for Gemini AI
+# Used for AI-powered analysis and recommendations
+google-genai
+
+# Google Maps Python client
+# Used for Places API searches and location data
+googlemaps
+
+
+# ============================================================================
+# WEB SERVER DEPENDENCIES
+# ============================================================================
+
+# FastAPI for REST API
+# High-performance web framework for the backend
+fastapi
+
+# Uvicorn ASGI server
+# Runs the FastAPI application
+uvicorn[standard]
+
+# Pydantic for request/response validation
+pydantic
+
+
+# ============================================================================
+# MCP INTEGRATION (NEW!)
+# ============================================================================
+
+# MCP (Model Context Protocol) Python SDK
+# Required for connecting to the MCP weather server
+# Documentation: https://modelcontextprotocol.io/
+mcp
+
+# Note: The mcp-weather server itself is run with uvx:
+# uvx mcp-weather
+# You need to have uv installed: pip install uv

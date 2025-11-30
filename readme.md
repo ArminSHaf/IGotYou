@@ -1,9 +1,10 @@
-# I GOT YOU - Hidden Gems Discovery Agent
+# Product Requirements Document
+## I GOT YOU - Hidden Gems Discovery Agent
 
 **Project**: Kaggle Agents Intensive Capstone  
-**Version**: 1.1  
-**Date**: November 29, 2025  
-**Contributors**: Alex Gutierrez, Armin Shafiei  
+**Version**: 1.0  
+**Date**: November 23, 2025  
+**Author**: Alex Gutierrez  
 **Timeline**: 2 weeks development
 
 ---
@@ -12,9 +13,9 @@
 
 ## Executive Summary
 
-I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel tools like Google Maps prioritize highly-reviewed locations, causing crowded tourist spots to dominate results. This agent does the opposite by identifying places with **fewer reviews (less crowded spots)** but high-quality ratings, then using AI to analyze why locals love these places.
+I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel search tools like Google Maps prioritize highly-reviewed locations, which means crowded tourist spots always appear first. This agent does the opposite by identifying places with fewer than 300 reviews but high quality ratings, then using AI to analyze why locals love these spots.
 
-The system combines Google Places API for structured data, **Gemini 2.5 Flash Lite** for intelligent analysis, and the **mcp_weather_server** (free open-source) for weather forecasts. After a spot is selected, the agent retrieves weather data for the upcoming days and determines the **best time window (“sweet spot”) for the user’s specific activity** based on conditions.
+The system combines Google Places API for structured data with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
 
 ---
 
@@ -22,14 +23,16 @@ The system combines Google Places API for structured data, **Gemini 2.5 Flash Li
 
 ### The Core Issue
 
-Travelers searching for outdoor destinations face two major problems:
+When travelers search for outdoor destinations, they face two problems:
 
-1. **Highly-reviewed spots dominate search results**, burying quieter and more authentic locations.
-2. **Hidden gems are hard to find**, especially if the user doesn’t know their exact names.
+1. **Popular spots dominate search results**: A beach with 5,000 reviews appears before a quieter beach with 150 reviews, even if both have similar ratings.
+
+2. **Hidden gems are literally hidden**: Unless you know the exact name of a lesser-known spot, it's nearly impossible to find through standard search.
+
 
 ### Who This Affects
 
-Travelers seeking authentic, serene, local outdoor experiences who want alternatives to crowded attractions.
+This affects travelers who want authentic experiences without crowds. They're willing to visit lesser-known places but have no way to systematically find them.
 
 ---
 
@@ -37,67 +40,75 @@ Travelers seeking authentic, serene, local outdoor experiences who want alternat
 
 ### What the Agent Does
 
-The agent takes a natural-language query such as *“quiet surf spot in Bali for beginners”* and returns 2–3 recommendations for places that have:
+The agent takes a natural language query like "quiet surf spot in Bali for beginners" and returns 2-3 recommendations for places that have:
 
-- **Fewer reviews (less crowded spots)** —  generally lower review volume  AKA less crowded spots
-- At least **3.5 star rating**  
-- AI-generated insights on *why* the spot is good  
-- **Weather-based timing recommendations using mcp_weather_server**
+- Fewer than 300 reviews (actually hidden)
+- At least 4.0 star rating (quality threshold)
+- Analysis of why the spot is good, when to visit, and insider tips
 
 ### How It Works
 
 ```
-Step 1: User provides a natural language query
+Step 1: User provides query in natural language
 Step 2: Agent searches Google Places API
-Step 3: Agent filters for quality but lesser-known spots (low review count + high rating)
-Step 4: Agent analyzes top reviews using Gemini 2.5 Flash Lite
-Step 5: Agent retrieves weather forecast via mcp_weather_server
-Step 6: Agent determines the sweet spot for the activity
-Step 7: Agent returns formatted recommendations
-
+Step 3: Agent filters results (under 300 reviews, 4.0+ rating)
+Step 4: Agent analyzes top reviews using Gemini AI
+Step 5: Agent returns formatted recommendations
 ```
+
+The entire process completes in under 30 seconds.
 
 ### Key Differentiator
 
-Most search tools rank by popularity.  
-**I GOT YOU ranks by "hiddenness" and quality — and adds weather-optimized timing.**
+Unlike standard search which ranks by popularity, this agent ranks by "hiddenness" while maintaining quality standards. It's specifically designed to surface places that other tools bury.
 
 ---
 
 ## Technical Architecture
 
-### Design Philosophy
+### Overall Design Philosophy
 
-Simple, functional, and achievable in two weeks.  
-One agent handles all tasks sequentially.
+This system uses the simplest possible architecture that still demonstrates the required capabilities. There is one agent that performs all functions rather than multiple specialized agents. This approach was chosen because:
+
+- It's completable in 2 weeks
+- It's easier to debug and test
+- It still demonstrates all required ADK capabilities
+- The focus is on working functionality, not architectural complexity
 
 ### System Components
 
-**Agent Core**  
-- **Gemini 2.5 Flash Lite**  
-- Handles query understanding, reasoning, review analysis, and integration steps  
+**Agent Core**
+- Uses Gemini 2.5 Flash light as the language model
+- Processes user queries and generates responses
+- Coordinates all operations in sequence
 
-**Data Sources**  
-- Google Places API — places & reviews  
-- **mcp_weather_server** — free open-source weather data provider  
+**Data Source**
+- Google Places API provides place information
+- Includes place details, reviews, ratings, and locations
 
 **Processing Steps**
-1. Query interpretation  
-2. API search  
-3. Filtering for “less crowded but high quality”  
-4. Review analysis  
-5. Weather analysis  
-6. Recommendation generation  
+1. Query understanding and intent extraction
+2. API search with relevant parameters
+3. Results filtering based on hidden gem criteria
+4. Review analysis using language model
+5. Output formatting and explanation generation
 
 ### Technology Stack
 
 | Component | Technology | Purpose |
-|-----------|------------|---------|
-| Language Model | **Gemini 2.5 Flash Lite** | Query and review analysis |
-| Places Data | Google Places API | Places, ratings, reviews |
-| Weather Data | **mcp_weather_server** | Weather forecasts |
-| Environment | any IDE able to run Python | Platform requirement |
-| Language | Python | Implementation |
+|-----------|-----------|---------|
+| Language Model | Gemini 1.5 Flash | Query processing and review analysis |
+| Data API | Google Places API | Place information and reviews |
+| Development Environment | Kaggle Notebook | Required competition platform |
+| Programming Language | Python | Implementation language |
+
+**What We Are Not Using**
+
+- Vertex AI Agent Engine (too complex for timeframe)
+- LangChain (adds unnecessary abstraction)
+- Vector databases (not needed for this use case)
+- Multi-agent orchestration (single agent is sufficient)
+- Persistent memory systems (session-only is adequate)
 
 ---
 
@@ -105,67 +116,337 @@ One agent handles all tasks sequentially.
 
 ### Feature 1: Intelligent Filtering
 
-**Purpose:** Find truly lesser-known spots instead of tourist-packed destinations.
+**Purpose**: Identify truly hidden places rather than popular tourist destinations
 
-**Filtering Logic:**
-- Spots with **lower review counts (less crowded)**  
-- Minimum **3.5+ rating**  
-- Minimum review count > 10 to avoid unreliable entries  
+**Implementation**:
+The agent applies two filters to all search results:
+- Review count must be less than 300 but greater than 10
+- Star rating must be 4.0 or higher
 
-**Success Criteria:**  
-Most recommendations clearly show lighter crowds (low review volume) upon verification.
+**Rationale**:
+Places under 300 reviews are genuinely less discovered but still have enough feedback to validate quality. The minimum of 10 reviews prevents showing places with insufficient data. The 4.0 rating ensures quality standards.
+
+**Success Criteria**:
+At least 80% of recommendations should have fewer than 300 reviews when manually verified.
 
 ---
 
 ### Feature 2: Review Analysis with AI
 
-**Purpose:** Generate meaningful insights explaining why each spot is special.
+**Purpose**: Extract meaningful insights from reviews that explain why a place is special
 
-**Implementation:**  
-Top 5 reviews → Gemini 2.5 Flash Lite → 3-sentence structured insight:
+**Implementation**:
+The agent takes the top 5 reviews for each place and sends them to Gemini with a structured prompt asking for:
+- Why this spot is good (one sentence)
+- Best time to visit to avoid crowds (one sentence)
+- One insider tip from the reviews (one sentence)
 
-1. Why the spot is good  
-2. Best time (from reviews) to avoid crowds  
-3. Insider tip  
+**Rationale**:
+Raw review data doesn't help users make decisions. By synthesizing reviews into actionable insights, the agent provides value beyond what users could get by reading reviews themselves.
 
----
-
-### Feature 3: Weather-Aware Timing Optimization
-
-**Purpose:** Determine when the user should visit the spot in the next few days.
-
-**Implementation:**  
-- Query **mcp_weather_server** for upcoming weather  
-- Analyze conditions specifically for the activity (surfing, hiking, waterfalls, etc.)  
-- Produce a *"sweet spot"* recommendation:  
-  - best day  
-  - ideal time window  
-  - justification  
-
-Examples:  
-- Surfing → wave height + wind + rain  
-- Hiking → precipitation + visibility + temperature  
-- Waterfalls → clouds + rainfall trends  
+**Success Criteria**:
+Generated insights should be factually accurate when compared to the actual reviews and should provide actionable information.
 
 ---
 
 ## ADK Capabilities Demonstrated
 
+The Kaggle competition requires demonstrating at least 3 ADK capabilities. This project demonstrates:
+
 ### Capability 1: Tool Use
-- Google Places API  
-- **mcp_weather_server**  
-- Demonstrates multi-tool integration  
+
+**How**: The agent makes API calls to Google Places
+**Evidence**: Code shows direct API integration for searching and fetching place details
+**Why it matters**: Demonstrates ability to integrate external data sources
 
 ### Capability 2: Reasoning and Planning
-The agent:  
-- Filters based on crowd level → quality  
-- Prioritizes relevance in reviews  
-- Plans weather-based recommendations  
+
+**How**: The agent makes decisions about which results to analyze and how to filter them
+**Evidence**: Filtering logic shows conditional reasoning (if review count less than 300 and rating greater than 4.0, then analyze)
+**Why it matters**: Shows the agent isn't just calling APIs but making intelligent decisions
 
 ### Capability 3: Natural Language Understanding
-Gemini 2.5 Flash Lite processes user intent + reviews.
 
-### Capability 4 (Optional): Context Management
-Session-level understanding of user activity & region.
+**How**: Gemini processes both user queries and review text
+**Evidence**: The agent interprets user intent from natural language and synthesizes review content
+**Why it matters**: Demonstrates language model capabilities in understanding context and generating relevant responses
+
+### Optional Capability 4: Context Management
+
+**How**: The agent maintains session-level context about user preferences
+**Evidence**: User's activity type and location preferences persist within a session
+**Why it matters**: Shows ability to personalize responses based on conversation context
 
 ---
+
+
+## Demo Scenarios
+
+### Scenario 1: Surf Spot Discovery
+
+**User Query**: "quiet surf spot in Bali for beginners"
+
+**Expected Agent Behavior**:
+1. Search Google Places for surf spots in Bali
+2. Filter to places with less than 300 reviews
+3. Prioritize results with "beginner" mentions in reviews
+4. Return 2-3 recommendations with analysis
+
+**Example Output**:
+```
+Hidden Gems Found:
+
+1. Batu Bolong Beach (North Section)
+   Rating: 4.6 stars, 142 reviews
+   
+   Analysis:
+   This spot offers mellow waves perfect for learning without 
+   the Kuta Beach crowds. Local surfers recommend visiting 
+   early morning between 6-8 AM when it's quietest. The north 
+   section specifically is less busy than the main beach area.
+   
+   Location: -8.6569, 115.1381
+```
+
+---
+
+### Scenario 2: Waterfall Discovery
+
+**User Query**: "waterfall near Reykjavik without tour buses"
+
+**Expected Agent Behavior**:
+1. Search Google Places for waterfalls near Reykjavik
+2. Filter to places with less than 300 reviews
+3. Look for review mentions of "quiet" or "no crowds"
+4. Return 2-3 recommendations with analysis
+
+**Example Output**:
+```
+Hidden Gems Found:
+
+1. Hjálparfoss
+   Rating: 4.8 stars, 89 reviews
+   
+   Analysis:
+   This waterfall is off the main tourist route, which keeps 
+   crowds minimal. Reviews consistently mention the lack of 
+   facilities, which means no tour bus stops. Visit anytime 
+   as it's consistently quiet, but bring your own snacks.
+   
+   Location: 64.2833, -19.8833
+```
+
+---
+
+## Success Metrics
+
+### Primary Success Criteria
+
+The agent succeeds if it meets these requirements:
+
+1. **Runs without errors**: The Kaggle notebook executes completely
+2. **Meets review threshold**: At least 80% of recommendations have fewer than 300 reviews
+3. **Maintains quality**: At least 90% of recommendations have 4.0+ star ratings
+4. **Provides analysis**: Every recommendation includes Gemini-generated insights
+5. **Demonstrates capabilities**: All 3 required ADK capabilities are clearly shown
+
+### Evaluation Method
+
+**Manual Verification Process**:
+For each of 10-15 test queries:
+1. Run the agent and capture recommendations
+2. Verify each place on Google Maps
+3. Check actual review counts against claimed counts
+4. Read actual reviews to verify analysis accuracy
+5. Document pass/fail for each criterion
+
+**Acceptance Standard**:
+If 80% of test queries produce valid results that meet all criteria, the agent is considered successful.
+
+---
+
+## Risk Management
+
+### Technical Risks
+
+**Risk: API Rate Limits**
+- Impact: Agent fails if too many requests are made
+- Mitigation: Test with small query sets first, add delays between requests if needed
+- Backup Plan: Cache results for demo scenarios
+
+**Risk: Inconsistent API Results**
+- Impact: Same query might return different results
+- Mitigation: Document that recommendations can vary based on API updates
+- Backup Plan: Show that the filtering logic is sound even if specific places change
+
+**Risk: Poor Review Analysis**
+- Impact: Gemini generates unhelpful or inaccurate insights
+- Mitigation: Refine prompts during development, test multiple variations
+- Backup Plan: Simplify to just showing review counts and ratings
+
+### Timeline Risks
+
+**Risk: Development Takes Longer Than Expected**
+- Impact: May not complete in 2 weeks
+- Mitigation: Build minimum viable version first, add features only if time permits
+- Backup Plan: Submit with basic functionality only, document what was cut
+
+**Risk: API Access Issues**
+- Impact: Cannot develop if APIs don't work
+- Mitigation: Test API access on Day 1, resolve any issues immediately
+- Backup Plan: Use sample data to demonstrate concept
+
+---
+
+## Code Structure
+
+### File Organization
+
+The entire implementation exists in one Kaggle Notebook with this structure:
+
+```
+Section 1: Introduction
+- Problem statement
+- Solution overview
+
+Section 2: Setup
+- Package installation
+- API configuration
+- Library imports
+
+Section 3: Implementation
+- Search function
+- Filter function
+- Analysis function
+- Display function
+
+Section 4: Demo Scenarios
+- Surf spot demo
+- Waterfall demo
+
+Section 5: Evaluation
+- Test queries
+- Results verification
+
+Section 6: Conclusion
+- Summary of results
+- Limitations
+- Future improvements
+```
+
+### Key Functions
+
+**find_hidden_gems(query, max_results=3)**
+- Main function that orchestrates all steps
+- Returns list of recommendations
+
+**analyze_with_gemini(place_name, reviews)**
+- Sends reviews to Gemini for analysis
+- Returns formatted insight text
+
+**display_recommendations(recommendations)**
+- Formats output for readability
+- Shows all relevant information
+
+---
+
+## Limitations and Future Work
+
+### Current Limitations
+
+1. **Geographic Coverage**: Results depend on Google Places API coverage, which varies by region
+2. **Review Analysis Depth**: Only analyzes top 5 reviews per place
+3. **No Temporal Data**: Cannot access current crowd levels or Popular Times
+4. **Language Limitation**: Works best with English reviews
+5. **Session-Only Memory**: Does not remember preferences between sessions
+
+### Future Enhancements
+
+**Short Term (Next 1-2 months)**:
+- Add support for more activity types beyond outdoor spots
+- Implement multi-hop discovery (find hidden gems near popular landmarks)
+- Add simple user feedback mechanism
+
+**Medium Term (Next 3-6 months)**:
+- Build web interface for easier access
+- Add user accounts to save preferences
+- Implement learning from user feedback
+- Expand to restaurants and cultural sites
+
+**Long Term (6+ months)**:
+- Mobile application development
+- Integration with trip planning tools
+- Community features where users share hidden gems
+- Partnerships with local tourism boards
+
+---
+
+## Submission Checklist
+
+Before submitting to Kaggle, verify:
+
+- [ ] Notebook runs completely without errors
+- [ ] All API keys use Kaggle secrets (not hardcoded)
+- [ ] Code is commented and readable
+- [ ] Markdown cells explain what each section does
+- [ ] Demo scenarios produce reasonable results
+- [ ] At least 3 ADK capabilities are clearly demonstrated
+- [ ] Evaluation section shows test results
+- [ ] References to ADK documentation are included
+- [ ] Total execution time is under 10 minutes
+- [ ] Output is well-formatted and easy to understand
+
+---
+
+## References
+
+**Competition Requirements**:
+- Kaggle Agents Intensive Capstone Project Guidelines
+- ADK-Python Documentation
+- Vertex AI Agent Documentation
+
+**Technical Documentation**:
+- Google Places API Documentation
+- Gemini API Reference
+- Python googlemaps Library Documentation
+
+**Related Concepts**:
+- ReAct Pattern (Reasoning + Acting)
+- LLM-as-Judge Evaluation Methods
+- Agent Tool Use Best Practices
+
+---
+
+## Appendix: Sample Prompts
+
+### Search Query Variations
+
+For surf spots:
+- "quiet surf spot in [location] for beginners"
+- "uncrowded beach for surfing in [location]"
+- "local surf spot in [location]"
+
+For waterfalls:
+- "waterfall near [city] without tour buses"
+- "hidden waterfall in [region]"
+- "quiet waterfall in [location]"
+
+For hiking:
+- "intermediate hiking trail near [city] not too popular"
+- "uncrowded hike in [region]"
+- "local hiking trail in [location]"
+
+### Review Analysis Prompt Template
+
+```
+Analyze these reviews for [PLACE_NAME]:
+
+[REVIEWS_TEXT]
+
+Provide exactly 3 sentences:
+1. Why this spot is good based on reviews
+2. Best time to visit to avoid crowds
+3. One specific insider tip from reviews
+
+Be concise and specific.
+```

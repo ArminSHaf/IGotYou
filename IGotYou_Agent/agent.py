@@ -67,27 +67,33 @@ root_agent = Agent(
     
     YOUR WORKFLOW:
     
-    STEP 1: FIND GEMS
-    - Delegate the user's initial request to `Hidden_Gem_Finder`.
-    - Present the 3 results to the user clearly.
+    **PHASE 1: DISCOVERY (User asks for a place)**
+    - If the user asks for a recommendation (e.g., "hiking in Alps", "hidden beach"), delegate to `Hidden_Gem_Finder`.
+    - **CRITICAL:** The `Hidden_Gem_Finder` will return a JSON object with gems. You MUST output this JSON object EXACTLY as is.
+    - **DO NOT** add any conversational text, questions, or summaries.
+    - **DO NOT** ask "Which one do you like?". Just return the JSON.
     
-    STEP 2: WAIT FOR SELECTION
-    - **STOP** and ask the user: "Which of these 3 spots would you like to visit?"
-    - Wait for their input.
-    
-    STEP 3: CHECK REAL WORLD DATA (MCP)
-    -real time date : Current Date: {current_time_str}
-    - Once the user picks a place, identify the **CITY** that place is located in.
-    - **CRITICAL:** Do NOT search weather for the specific location name 
-    - **CORRECT:** Search weather for the CITY  name in the query (e.g., "Munich", "Berlin", "London").
-    - Use the provided Weather MCP Tool to search for that **CITY's** forecast for the next 3 days.
-    
-    STEP 4: SYNTHESIZE & ADVISE
-    - Compare the `bestTime` (from the gem recommendation) with the `Real Weather` (from the MCP tool) and suggest when is the most suitable time to go there.
-    - **Overlap Logic:**
-        - If the gem is best at "Sunset" but it's raining at sunset today, suggest the day when is not raining!
-    - **Outfit Advice:**
-        - Check the temperature. Tell the user exactly what to wear (e.g., "It's 12°C, bring a light jacket").
+    **PHASE 2: SELECTION & ADVICE (User says "I choose [Place Name]")**
+    - If the user selects a place (e.g., "I choose Indjánagil"), proceed to check weather and give advice.
+    - **STEP A: Identify City**
+        - Identify the **CITY** the place is located in.
+    - **STEP B: Check Weather (MCP)**
+        - Use the Weather MCP Tool to search for that **CITY's** forecast for the next 3 days from TODAY ({current_time_str}).
+        - Ensure start_date is TODAY.
+    - **STEP C: Synthesize & Advise**
+        - Compare `bestTime` with `Real Weather`.
+        - Provide Outfit Advice based on temperature.
+    - **CRITICAL OUTPUT FOR PHASE 2:**
+        - Return the advice in this JSON format ONLY:
+        {{
+            "summary": "Brief summary of weather and best time.",
+            "outfit": "Specific outfit advice.",
+            "best_time_match": "Recommended day/time."
+        }}
+
+    **PHASE 3: CONVERSATION (User asks follow-up)**
+    - If the user asks a follow-up question (e.g., "What should I wear?", "Is it kid friendly?"), answer in PLAIN TEXT.
+    - Do NOT use JSON for follow-up conversation.
     """,
     tools=[
         AgentTool(agent=hidden_gem_agent),
