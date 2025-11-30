@@ -1,10 +1,10 @@
 # I GOT YOU - Hidden Gems Discovery Agent
 
-**Project**: Kaggle Agents Intensive Capstone  
-**Version**: 1.1  
-**Date**: November 29, 2025  
-**Contributors**: Alex Gutierrez, Armin Shafiei  
-**Timeline**: 2 weeks development
+**Project:** Kaggle Agents Intensive Capstone  
+**Version:** 1.1  
+**Date:** November 29, 2025  
+**Contributors:** Alex Gutierrez, Armin Shafiei  
+**Timeline:** 2 weeks development
 
 ---
 
@@ -12,160 +12,128 @@
 
 ## Executive Summary
 
-I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel tools like Google Maps prioritize highly-reviewed locations, causing crowded tourist spots to dominate results. This agent does the opposite by identifying places with **fewer reviews (less crowded spots)** but high-quality ratings, then using AI to analyze why locals love these places.
+**I GOT YOU** is an AI agent designed to help travelers discover quiet, lesser-known outdoor destinations. It addresses a specific limitation in popular travel tools like Google Maps, which prioritize highly-reviewed locations and inadvertently direct users to crowded tourist hubs. This agent reverses that logic by identifying places with **lower review volumes (indicating fewer crowds)** that still maintain high quality ratings.
 
-The system combines Google Places API for structured data, **Gemini 2.5 Flash Lite** for intelligent analysis, and the **mcp_weather_server** (free open-source) for weather forecasts. After a spot is selected, the agent retrieves weather data for the upcoming days and determines the **best time window (“sweet spot”) for the user’s specific activity** based on conditions.
+The system combines the **Google Places API** for structured data, **Gemini 2.5 Flash Lite** for intelligent analysis, and the **mcp_weather_server** (open-source) for real-time forecasting. Once a destination is selected, the agent analyzes upcoming weather conditions to recommend the **"sweet spot"**—the optimal time window for the user’s specific activity.
 
 ---
 
 ## Problem Statement
 
 ### The Core Issue
-
-Travelers searching for outdoor destinations face two major problems:
-
-1. **Highly-reviewed spots dominate search results**, burying quieter and more authentic locations.
-2. **Hidden gems are hard to find**, especially if the user doesn’t know their exact names.
+Travelers searching for outdoor destinations face two major hurdles:
+1.  **Popularity Bias:** Highly-reviewed spots dominate search results, burying quieter, authentic locations.
+2.  **Discovery Friction:** True "hidden gems" are difficult to find without knowing their specific names.
 
 ### Who This Affects
-
-Travelers seeking authentic, serene, local outdoor experiences who want alternatives to crowded attractions.
+Travelers seeking authentic, serene, and local outdoor experiences who want alternatives to crowded mainstream attractions.
 
 ---
 
 ## Solution Overview
 
 ### What the Agent Does
-
-The agent takes a natural-language query such as *“quiet surf spot in Bali for beginners”* and returns 2–3 recommendations for places that have:
-
-- **Fewer reviews (less crowded spots)** —  generally lower review volume  AKA less crowded spots
-- At least **3.5 star rating**  
-- AI-generated insights on *why* the spot is good  
-- **Weather-based timing recommendations using mcp_weather_server**
+The agent accepts natural-language queries (e.g., *“quiet surf spot in Bali for beginners”*) and returns 2–3 recommendations that feature:
+* **Low Review Volume:** Indicates a less crowded location.
+* **High Quality:** Minimum 3.5-star rating.
+* **AI Insights:** Generated explanations on *why* locals love the spot.
+* **Smart Timing:** Weather-based recommendations via `mcp_weather_server`.
 
 ### How It Works
-
-```
-Step 1: User provides a natural language query
-Step 2: Agent searches Google Places API
-Step 3: Agent filters for quality but lesser-known spots (low review count + high rating)
-Step 4: Agent analyzes top reviews using Gemini 2.5 Flash Lite
-Step 5: Agent retrieves weather forecast via mcp_weather_server
-Step 6: Agent determines the sweet spot for the activity
-Step 7: Agent returns formatted recommendations
-
-```
+1.  **User Input:** The user provides a natural language query.
+2.  **Search:** The agent queries the Google Places API.
+3.  **Filter:** The agent filters for quality but lesser-known spots (low review count + high rating).
+4.  **Analyze:** Gemini 2.5 Flash Lite analyzes the top reviews to extract insights.
+5.  **Forecast:** The agent retrieves weather data via `mcp_weather_server`.
+6.  **Optimize:** The agent determines the best time window for the specific activity.
+7.  **Recommend:** The agent presents the final formatted results.
 
 ### Key Differentiator
-
-Most search tools rank by popularity.  
-**I GOT YOU ranks by "hiddenness" and quality — and adds weather-optimized timing.**
+Most search tools rank by popularity. **I GOT YOU ranks by "hiddenness" and quality—then optimizes for weather.**
 
 ---
 
 ## Technical Architecture
 
 ### Design Philosophy
-
-Simple, functional, and achievable in two weeks.  
-One agent handles all tasks sequentially.
+Simple, functional, and achievable within a two-week sprint. A single root agent orchestrates the workflow sequentially.
 
 ### System Components
-
-**Agent Core**  
-- **Gemini 2.5 Flash Lite**  
-- Handles query understanding, reasoning, review analysis, and integration steps  
-
-**Data Sources**  
-- Google Places API — places & reviews  
-- **mcp_weather_server** — free open-source weather data provider  
-
-**Processing Steps**
-1. Query interpretation  
-2. API search  
-3. Filtering for “less crowded but high quality”  
-4. Review analysis  
-5. Weather analysis  
-6. Recommendation generation  
+* **Agent Core:**
+    * **Gemini 2.5 Flash Lite:** Handles query understanding, reasoning, review analysis, and step integration.
+* **Data Sources:**
+    * **Google Places API:** Provides location data, ratings, and reviews.
+    * **mcp_weather_server:** Provides free, open-source weather data.
+* **Processing Steps:**
+    1.  Query interpretation
+    2.  API search
+    3.  Filtering (Crowd level vs. Quality)
+    4.  Review analysis
+    5.  Weather analysis
+    6.  Recommendation generation
 
 ### Technology Stack
 
 | Component | Technology | Purpose |
-|-----------|------------|---------|
-| Language Model | **Gemini 2.5 Flash Lite** | Query and review analysis |
-| Places Data | Google Places API | Places, ratings, reviews |
-| Weather Data | **mcp_weather_server** | Weather forecasts |
-| Environment | any IDE able to run Python | Platform requirement |
-| Language | Python | Implementation |
+| :--- | :--- | :--- |
+| **Language Model** | Gemini 2.5 Flash Lite | Query and review analysis |
+| **Places Data** | Google Places API | Places, ratings, reviews |
+| **Weather Data** | mcp_weather_server | Weather forecasts |
+| **Environment** | Python-compatible IDE | Platform requirement |
+| **Language** | Python | Implementation |
 
 ---
 
 ## Core Features
 
 ### Feature 1: Intelligent Filtering
-
-**Purpose:** Find truly lesser-known spots instead of tourist-packed destinations.
+**Purpose:** To surface truly lesser-known spots rather than tourist traps.
 
 **Filtering Logic:**
-- Spots with **lower review counts (less crowded)**  
-- Minimum **3.5+ rating**  
-- Minimum review count > 10 to avoid unreliable entries  
+* **Low Review Counts:** Proxies for "less crowded."
+* **Quality Threshold:** Minimum 3.5+ star rating.
+* **Reliability Floor:** Minimum >10 reviews to avoid data errors.
 
-**Success Criteria:**  
-Most recommendations clearly show lighter crowds (low review volume) upon verification.
-
----
+**Success Criteria:**
+Recommendations consistently show lighter crowds (verified by review volume) compared to top search results.
 
 ### Feature 2: Review Analysis with AI
+**Purpose:** To generate meaningful insights that explain a spot's unique appeal.
 
-**Purpose:** Generate meaningful insights explaining why each spot is special.
-
-**Implementation:**  
-Top 5 reviews → Gemini 2.5 Flash Lite → 3-sentence structured insight:
-
-1. Why the spot is good  
-2. Best time (from reviews) to avoid crowds  
-3. Insider tip  
-
----
+**Implementation:**
+The agent analyzes the top 5 reviews using Gemini 2.5 Flash Lite to produce a 3-part structured insight:
+1.  **Why it's special**
+2.  **Best time to visit** (based on user feedback)
+3.  **Insider tips**
 
 ### Feature 3: Weather-Aware Timing Optimization
+**Purpose:** To determine the optimal visit time over the next few days.
 
-**Purpose:** Determine when the user should visit the spot in the next few days.
+**Implementation:**
+* Queries `mcp_weather_server` for the forecast.
+* Analyzes conditions relative to the activity (e.g., Surf, Hike, Waterfall).
+* Produces a **"Sweet Spot"** recommendation including the best day, ideal time window, and justification.
 
-**Implementation:**  
-- Query **mcp_weather_server** for upcoming weather  
-- Analyze conditions specifically for the activity (surfing, hiking, waterfalls, etc.)  
-- Produce a *"sweet spot"* recommendation:  
-  - best day  
-  - ideal time window  
-  - justification  
-
-Examples:  
-- Surfing → wave height + wind + rain  
-- Hiking → precipitation + visibility + temperature  
-- Waterfalls → clouds + rainfall trends  
+**Examples:**
+* *Surfing:* Wave height + Wind speed + Rain
+* *Hiking:* Precipitation + Visibility + Temperature
+* *Waterfalls:* Cloud cover + Recent rainfall trends
 
 ---
 
 ## ADK Capabilities Demonstrated
 
 ### Capability 1: Tool Use
-- Google Places API  
-- **mcp_weather_server**  
-- Demonstrates multi-tool integration  
+* Integration of Google Places API and `mcp_weather_server`.
+* Demonstrates effective multi-tool chaining.
 
 ### Capability 2: Reasoning and Planning
-The agent:  
-- Filters based on crowd level → quality  
-- Prioritizes relevance in reviews  
-- Plans weather-based recommendations  
+* Filters candidates based on the trade-off between crowd level and quality.
+* Prioritizes relevance within review text.
+* Plans recommendations based on external weather variables.
 
 ### Capability 3: Natural Language Understanding
-Gemini 2.5 Flash Lite processes user intent + reviews.
+* Utilizes Gemini 2.5 Flash Lite to interpret user intent and synthesize unstructured review data.
 
-### Capability 4 (Optional): Context Management
-Session-level understanding of user activity & region.
-
----
+### Capability 4: Context Management
+* Maintains session-level understanding of the user's desired activity and target region.
