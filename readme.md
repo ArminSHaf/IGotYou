@@ -1,9 +1,10 @@
-# I GOT YOU - Hidden Gems Discovery Agent
+# Product Requirements Document
+## I GOT YOU - Hidden Gems Discovery Agent
 
 **Project**: Kaggle Agents Intensive Capstone  
-**Version**: 1.1  
-**Date**: November 29, 2025  
-**Contributors**: Alex Gutierrez, Armin Shafiei  
+**Version**: 1.0  
+**Date**: November 23, 2025  
+**Author**: Alex Gutierrez  
 **Timeline**: 2 weeks development
 
 ---
@@ -12,9 +13,9 @@
 
 ## Executive Summary
 
-I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel tools like Google Maps prioritize highly-reviewed locations, causing crowded tourist spots to dominate results. This agent does the opposite by identifying places with **fewer reviews (less crowded spots)** but high-quality ratings, then using AI to analyze why locals love these places.
+I GOT YOU is an AI agent that helps travelers discover quiet, lesser-known outdoor destinations. It solves a specific problem: popular travel search tools like Google Maps prioritize highly-reviewed locations, which means crowded tourist spots always appear first. This agent does the opposite by identifying places with fewer than 300 reviews but high quality ratings, then using AI to analyze why locals love these spots.
 
-The system combines Google Places API and TripAdvisor API for structured data and reviews, **Gemini 2.5 Flash Lite** for intelligent analysis, and the **mcp_weather_server** (free open-source) for weather forecasts. After a spot is selected, the agent retrieves weather data for the upcoming days and determines the **best time window ("sweet spot") for the user's specific activity** based on conditions. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
+The system combines Google Places API for structured data with Gemini AI for intelligent analysis. The result is a working agent that can find hidden gem beaches, waterfalls, hiking trails, and other outdoor locations based on what the user is looking for.
 
 ---
 
@@ -22,14 +23,16 @@ The system combines Google Places API and TripAdvisor API for structured data an
 
 ### The Core Issue
 
-Travelers searching for outdoor destinations face two major problems:
+When travelers search for outdoor destinations, they face two problems:
 
-1. **Highly-reviewed spots dominate search results**, burying quieter and more authentic locations.
-2. **Hidden gems are hard to find**, especially if the user doesn’t know their exact names.
+1. **Popular spots dominate search results**: A beach with 5,000 reviews appears before a quieter beach with 150 reviews, even if both have similar ratings.
+
+2. **Hidden gems are literally hidden**: Unless you know the exact name of a lesser-known spot, it's nearly impossible to find through standard search.
+
 
 ### Who This Affects
 
-Travelers seeking authentic, serene, local outdoor experiences who want alternatives to crowded attractions.
+This affects travelers who want authentic experiences without crowds. They're willing to visit lesser-known places but have no way to systematically find them.
 
 ---
 
@@ -37,144 +40,67 @@ Travelers seeking authentic, serene, local outdoor experiences who want alternat
 
 ### What the Agent Does
 
-The agent takes a natural-language query such as *“quiet surf spot in Bali for beginners”* and returns 2–3 recommendations for places that have:
+The agent takes a natural language query like "quiet surf spot in Bali for beginners" and returns 2-3 recommendations for places that have:
 
-- **Fewer reviews (less crowded spots)** —  generally lower review volume  AKA less crowded spots
-- At least **3.5 star rating**  
-- AI-generated insights on *why* the spot is good  
-- **Weather-based timing recommendations using mcp_weather_server**
+- Fewer than 300 reviews (actually hidden)
+- At least 4.0 star rating (quality threshold)
+- Analysis of why the spot is good, when to visit, and insider tips
 
 ### How It Works
 
 ```
-Step 1: User provides a natural language query
+Step 1: User provides query in natural language
 Step 2: Agent searches Google Places API
-Step 3: Agent filters for quality but lesser-known spots (low review count + high rating)
-Step 4: Agent fetches additional reviews from TripAdvisor API for selected places
-Step 5: Agent analyzes reviews from both sources using Gemini 2.5 Flash Lite
-Step 6: Agent retrieves weather forecast via mcp_weather_server
-Step 7: Agent determines the sweet spot for the activity
-Step 8: Agent returns formatted recommendations
+Step 3: Agent filters results (under 300 reviews, 4.0+ rating)
+Step 4: Agent analyzes top reviews using Gemini AI
+Step 5: Agent returns formatted recommendations
 ```
+
+The entire process completes in under 30 seconds.
 
 ### Key Differentiator
 
-Most search tools rank by popularity.  
-**I GOT YOU ranks by "hiddenness" and quality — and adds weather-optimized timing.**
-
----
-
-## Output Format
-
-### What Users Receive
-
-When the agent completes its search and analysis, users receive comprehensive information about each recommended hidden gem location. The output includes:
-
-#### 1. Location Information
-- **Place Name**: The official name of the location
-- **Address**: Full address or area description
-- **Coordinates**: Geographic coordinates (latitude, longitude) for precise location
-- **Rating**: Star rating (e.g., 4.6 stars)
-- **Review Count**: Number of reviews (e.g., 142 reviews)
-
-#### 2. Visual Content
-- **Place Photos**: High-quality photos of the location retrieved from Google Places API
-  - Multiple photos showing different angles and perspectives
-  - Photos help users visualize the destination before visiting
-  - Images are displayed in a gallery format for easy browsing
-
-#### 3. Interactive Google Maps Integration
-- **Map Pin**: An interactive pin marker placed on Google Maps showing the exact location
-- **Clickable Navigation**: Users can click/tap the pin to:
-  - Open the location directly in Google Maps application
-  - Get turn-by-turn directions to the destination
-  - View the location in satellite or street view mode
-  - Access additional Google Maps features (save, share, etc.)
-
-#### 4. AI-Generated Analysis
-- **Why It's Special**: One-sentence explanation of what makes this spot unique
-- **Best Time to Visit**: Recommendation for when to visit to avoid crowds
-- **Insider Tip**: Specific advice extracted from local reviews
-
-### Output Display Format
-
-Each recommendation is presented as a card or section containing:
-```
-[Place Name]
-Rating: X.X stars | Reviews: XXX
-
-[Photo Gallery - Multiple Images]
-
-[Interactive Google Maps with Pin]
-[Click to open in Google Maps]
-
-Location: [Address]
-Coordinates: [Latitude, Longitude]
-
-Analysis:
-• Why it's special: [AI-generated insight]
-• Best time to visit: [Crowd avoidance tip]
-• Insider tip: [Local knowledge]
-```
-
-### User Interaction Flow
-
-1. User submits a query (e.g., "quiet surf spot in Bali")
-2. Agent processes and returns 2-3 recommendations
-3. For each recommendation, user sees:
-   - Location details and photos
-   - Interactive map with pin
-4. User clicks the map pin
-5. System redirects to Google Maps with the location pre-loaded
-6. User can then navigate, save, or share the location
-
-### Technical Implementation Notes
-
-- **Photos**: Retrieved from Google Places API `photos` field, displayed using optimized image URLs
-- **Map Integration**: Uses Google Maps Embed API or Google Maps JavaScript API to display interactive map
-- **Navigation Link**: Generates a Google Maps deep link (e.g., `https://www.google.com/maps/search/?api=1&query=lat,lng`) that opens the location in Google Maps
-- **Responsive Design**: Output format adapts to different screen sizes (desktop, tablet, mobile)
+Unlike standard search which ranks by popularity, this agent ranks by "hiddenness" while maintaining quality standards. It's specifically designed to surface places that other tools bury.
 
 ---
 
 ## Technical Architecture
 
-### Design Philosophy
+### Overall Design Philosophy
 
-Simple, functional, and achievable in two weeks.  
-One agent handles all tasks sequentially.
+This system uses the simplest possible architecture that still demonstrates the required capabilities. There is one agent that performs all functions rather than multiple specialized agents. This approach was chosen because:
+
+- It's completable in 2 weeks
+- It's easier to debug and test
+- It still demonstrates all required ADK capabilities
+- The focus is on working functionality, not architectural complexity
 
 ### System Components
 
-**Agent Core**  
-- **Gemini 2.5 Flash Lite**  
-- Handles query understanding, reasoning, review analysis, and integration steps  
+**Agent Core**
+- Uses Gemini 2.5 Flash light as the language model
+- Processes user queries and generates responses
+- Coordinates all operations in sequence
 
-**Data Sources**  
-- Google Places API — places & reviews  
-- TripAdvisor API — additional reviews to enrich analysis
-- **mcp_weather_server** — free open-source weather data provider  
+**Data Source**
+- Google Places API provides place information
+- Includes place details, reviews, ratings, and locations
 
 **Processing Steps**
 1. Query understanding and intent extraction
-2. API search with relevant parameters (Google Places API)
+2. API search with relevant parameters
 3. Results filtering based on hidden gem criteria
-4. Fetching additional reviews from TripAdvisor API for filtered places
-5. Review analysis using language model (combining reviews from both sources)
-6. Weather analysis via mcp_weather_server
-7. Recommendation generation with weather-optimized timing
-8. Output formatting and explanation generation
+4. Review analysis using language model
+5. Output formatting and explanation generation
 
 ### Technology Stack
 
 | Component | Technology | Purpose |
-|-----------|------------|---------|
-| Language Model | **Gemini 2.5 Flash Lite** | Query processing and review analysis |
-| Places Data | Google Places API | Place information and reviews |
-| Additional Reviews | TripAdvisor API | Additional reviews from places to enrich analysis |
-| Weather Data | **mcp_weather_server** | Weather forecasts |
-| Environment | any IDE able to run Python | Platform requirement |
-| Language | Python | Implementation language |
+|-----------|-----------|---------|
+| Language Model | Gemini 1.5 Flash | Query processing and review analysis |
+| Data API | Google Places API | Place information and reviews |
+| Development Environment | Kaggle Notebook | Required competition platform |
+| Programming Language | Python | Implementation language |
 
 **What We Are Not Using**
 
@@ -190,73 +116,70 @@ One agent handles all tasks sequentially.
 
 ### Feature 1: Intelligent Filtering
 
-**Purpose:** Find truly lesser-known spots instead of tourist-packed destinations.
+**Purpose**: Identify truly hidden places rather than popular tourist destinations
 
-**Filtering Logic:**
-- Spots with **lower review counts (less crowded)**  
-- Minimum **3.5+ rating**  
-- Minimum review count > 10 to avoid unreliable entries  
+**Implementation**:
+The agent applies two filters to all search results:
+- Review count must be less than 300 but greater than 10
+- Star rating must be 4.0 or higher
 
-**Success Criteria:**  
-Most recommendations clearly show lighter crowds (low review volume) upon verification.
+**Rationale**:
+Places under 300 reviews are genuinely less discovered but still have enough feedback to validate quality. The minimum of 10 reviews prevents showing places with insufficient data. The 4.0 rating ensures quality standards.
+
+**Success Criteria**:
+At least 80% of recommendations should have fewer than 300 reviews when manually verified.
 
 ---
 
 ### Feature 2: Review Analysis with AI
 
-**Purpose:** Generate meaningful insights explaining why each spot is special.
+**Purpose**: Extract meaningful insights from reviews that explain why a place is special
 
-**Implementation:**  
-The agent collects reviews from both Google Places API and TripAdvisor API for each selected place, then takes the top 5-10 reviews across both sources and sends them to Gemini 2.5 Flash Lite with a structured prompt asking for:
-
-1. Why the spot is good (one sentence)
-2. Best time (from reviews) to avoid crowds (one sentence)
-3. One insider tip from the reviews (one sentence)
+**Implementation**:
+The agent takes the top 5 reviews for each place and sends them to Gemini with a structured prompt asking for:
+- Why this spot is good (one sentence)
+- Best time to visit to avoid crowds (one sentence)
+- One insider tip from the reviews (one sentence)
 
 **Rationale**:
-By combining reviews from multiple sources (Google Places and TripAdvisor), the agent gets a more comprehensive view of each location. Raw review data doesn't help users make decisions. By synthesizing reviews from multiple platforms into actionable insights, the agent provides value beyond what users could get by reading reviews from a single source themselves.
+Raw review data doesn't help users make decisions. By synthesizing reviews into actionable insights, the agent provides value beyond what users could get by reading reviews themselves.
 
----
-
-### Feature 3: Weather-Aware Timing Optimization
-
-**Purpose:** Determine when the user should visit the spot in the next few days.
-
-**Implementation:**  
-- Query **mcp_weather_server** for upcoming weather  
-- Analyze conditions specifically for the activity (surfing, hiking, waterfalls, etc.)  
-- Produce a *"sweet spot"* recommendation:  
-  - best day  
-  - ideal time window  
-  - justification  
-
-Examples:  
-- Surfing → wave height + wind + rain  
-- Hiking → precipitation + visibility + temperature  
-- Waterfalls → clouds + rainfall trends  
+**Success Criteria**:
+Generated insights should be factually accurate when compared to the actual reviews and should provide actionable information.
 
 ---
 
 ## ADK Capabilities Demonstrated
 
+The Kaggle competition requires demonstrating at least 3 ADK capabilities. This project demonstrates:
+
 ### Capability 1: Tool Use
-- Google Places API  
-- **mcp_weather_server**  
-- Demonstrates multi-tool integration  
+
+**How**: The agent makes API calls to Google Places
+**Evidence**: Code shows direct API integration for searching and fetching place details
+**Why it matters**: Demonstrates ability to integrate external data sources
 
 ### Capability 2: Reasoning and Planning
-The agent:  
-- Filters based on crowd level → quality  
-- Prioritizes relevance in reviews  
-- Plans weather-based recommendations  
+
+**How**: The agent makes decisions about which results to analyze and how to filter them
+**Evidence**: Filtering logic shows conditional reasoning (if review count less than 300 and rating greater than 4.0, then analyze)
+**Why it matters**: Shows the agent isn't just calling APIs but making intelligent decisions
 
 ### Capability 3: Natural Language Understanding
-Gemini 2.5 Flash Lite processes user intent + reviews.
 
-### Capability 4 (Optional): Context Management
-Session-level understanding of user activity & region.
+**How**: Gemini processes both user queries and review text
+**Evidence**: The agent interprets user intent from natural language and synthesizes review content
+**Why it matters**: Demonstrates language model capabilities in understanding context and generating relevant responses
+
+### Optional Capability 4: Context Management
+
+**How**: The agent maintains session-level context about user preferences
+**Evidence**: User's activity type and location preferences persist within a session
+**Why it matters**: Shows ability to personalize responses based on conversation context
 
 ---
+
+
 ## Demo Scenarios
 
 ### Scenario 1: Surf Spot Discovery
@@ -275,22 +198,14 @@ Hidden Gems Found:
 
 1. Batu Bolong Beach (North Section)
    Rating: 4.6 stars, 142 reviews
-   Address: Batu Bolong Beach, Canggu, Bali, Indonesia
-   
-   [Photo Gallery - Multiple images of the beach and surf conditions]
-   
-   [Interactive Google Maps with pin at location -8.6569, 115.1381]
-   [Click pin to open in Google Maps →]
    
    Analysis:
-   • Why it's special: This spot offers mellow waves perfect for 
-     learning without the Kuta Beach crowds.
-   • Best time to visit: Local surfers recommend visiting early 
-     morning between 6-8 AM when it's quietest.
-   • Insider tip: The north section specifically is less busy than 
-     the main beach area.
+   This spot offers mellow waves perfect for learning without 
+   the Kuta Beach crowds. Local surfers recommend visiting 
+   early morning between 6-8 AM when it's quietest. The north 
+   section specifically is less busy than the main beach area.
    
-   Coordinates: -8.6569, 115.1381
+   Location: -8.6569, 115.1381
 ```
 
 ---
@@ -311,22 +226,14 @@ Hidden Gems Found:
 
 1. Hjálparfoss
    Rating: 4.8 stars, 89 reviews
-   Address: Hjálparfoss, Iceland
-   
-   [Photo Gallery - Multiple images of the waterfall and surrounding area]
-   
-   [Interactive Google Maps with pin at location 64.2833, -19.8833]
-   [Click pin to open in Google Maps →]
    
    Analysis:
-   • Why it's special: This waterfall is off the main tourist route, 
-     which keeps crowds minimal.
-   • Best time to visit: Visit anytime as it's consistently quiet, 
-     but bring your own snacks.
-   • Insider tip: Reviews consistently mention the lack of facilities, 
-     which means no tour bus stops.
+   This waterfall is off the main tourist route, which keeps 
+   crowds minimal. Reviews consistently mention the lack of 
+   facilities, which means no tour bus stops. Visit anytime 
+   as it's consistently quiet, but bring your own snacks.
    
-   Coordinates: 64.2833, -19.8833
+   Location: 64.2833, -19.8833
 ```
 
 ---
@@ -500,7 +407,6 @@ Before submitting to Kaggle, verify:
 
 **Technical Documentation**:
 - Google Places API Documentation
-- TripAdvisor API Documentation
 - Gemini API Reference
 - Python googlemaps Library Documentation
 

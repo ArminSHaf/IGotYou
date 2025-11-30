@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'maps.google.com',
+        pathname: '/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },
